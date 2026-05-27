@@ -211,7 +211,7 @@
     border: 1px solid var(--border);
     display: inline-block;
   }
-  #drawCanvas { display: block; cursor: crosshair; }
+  #drawCanvas { display: block; cursor: crosshair; margin: 120px; }
   #cropCanvas { display: block; }
   .canvas-toolbar {
     display: flex; gap: 8px; align-items: center;
@@ -1384,7 +1384,7 @@ function canvasCoords(e) {
 const DRAG_THRESHOLD = 5; // pixels
 let panState = null; // { startX, startY, scrollLeft, scrollTop, moved }
 
-drawCanvas.addEventListener('mousedown', e => {
+drawZoomWrap.addEventListener('mousedown', e => {
   if (e.button !== 0) return; // left-button only
   panState = {
     startX: e.clientX,
@@ -1418,6 +1418,10 @@ window.addEventListener('mouseup', e => {
   if (wasPan) return; // we panned, don't treat as click
   // Otherwise: it was a click — perform the click action
   if (state.step !== 4) return;
+  // Ignore clicks that land on the empty margin, not on the canvas pixels
+  const canvasRect = drawCanvas.getBoundingClientRect();
+  if (e.clientX < canvasRect.left || e.clientX > canvasRect.right ||
+      e.clientY < canvasRect.top  || e.clientY > canvasRect.bottom) return;
   if (state.tool === 'polygon') {
     const pt = canvasCoords(e);
     if (!state.currentShape) state.currentShape = [];
