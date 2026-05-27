@@ -1378,7 +1378,46 @@ function canvasCoords(e) {
   ];
 }
 
-drawCanvas.addEventListener('click', e => {
+// Pan-by-drag with click/drag discrimination.
+// If pointer moves < DRAG_THRESHOLD before mouseup, treat as click (add point / erase).
+// If it moves more, pan the scroll container and suppress the click.
+const DRAG_THRESHOLD = 5; // pixels
+let panState = null; // { startX, startY, scrollLeft, scrollTop, moved }
+
+drawCanvas.addEventListener('mousedown', e => {
+  if (e.button !== 0) return; // left-button only
+  panState = {
+    startX: e.clientX,
+    startY: e.clientY,
+    scrollLeft: drawZoomWrap.scrollLeft,
+    scrollTop: drawZoomWrap.scrollTop,
+    moved: false,
+  };
+});
+
+window.addEventListener('mousemove', e => {
+  if (!panState) return;
+  const dx = e.clientX - panState.startX;
+  const dy = e.clientY - panState.startY;
+  if (!panState.moved && Math.hypot(dx, dy) > DRAG_THRESHOLD) {
+    panState.moved = true;
+    drawCanvas.style.cursor = 'grabbing';
+  }
+  if (panState.moved) {
+    drawZoomWrap.scrollLeft = panState.scrollLeft - dx;
+    drawZoomWrap.scrollTop = panState.scrollTop - dy;
+  }
+});
+
+window.addEventListener('mouseup', e => {
+  if (!panState) return;
+  const wasPan = panState.moved;
+  panState = null;
+  // Restore cursor for current tool
+  drawCanvas.style.cursor = state.tool === 'erase' ? 'not-allowed' : 'crosshair';
+  if (wasPan) return; // we panned, don't treat as click
+  // Otherwise: it was a click — perform the click action
+  if (state.step !== 4) return;
   if (state.tool === 'polygon') {
     const pt = canvasCoords(e);
     if (!state.currentShape) state.currentShape = [];
@@ -1701,38 +1740,35 @@ function initThreeScene() {
   threeMesh = new THREE.Mesh(geo, threeMaterial);
   threeScene.add(threeMesh);
 
+  // Bind interaction listeners ONCE (avoid orphaning WebGL context by cloning)
+  if (!canvas._uvpListenersAttached) {
+    canvas.addEventListener('mousedown', e => {
+      threeDrag = { x: e.clientX, y: e.clientY, rx: threeRotation.x, ry: threeRotation.y };
+      threeAnimating = false;
+      e.preventDefault();
+    });
+    window.addEventListener('mousemove', e => {
+      if (!threeDrag) return;
+      const dx = (e.clientX - threeDrag.x) * 0.01;
+      const dy = (e.clientY - threeDrag.y) * 0.01;
+      threeRotation.y = threeDrag.ry + dx;
+      threeRotation.x = threeDrag.rx + dy;
+    });
+    window.addEventListener('mouseup', () => { threeDrag = null; });
+    canvas.addEventListener('wheel', e => {
+      e.preventDefault();
+      threeZoom = Math.max(1.5, Math.min(8, threeZoom + e.deltaY * 0.002));
+    }, { passive: false });
+    canvas.addEventListener('dblclick', () => {
+      threeRotation = { x: 0.4, y: 0.6 };
+      threeZoom = 3;
+      threeAnimating = true;
+    });
+    canvas._uvpListenersAttached = true;
+  }
+
   if (threeAnimFrame) cancelAnimationFrame(threeAnimFrame);
   animateThree();
-}
-
-function bindPreviewInteraction() {
-  const canvas = document.getElementById('previewCanvas');
-  // Remove old listeners by cloning
-  const newCanvas = canvas.cloneNode(true);
-  canvas.parentNode.replaceChild(newCanvas, canvas);
-
-  newCanvas.addEventListener('mousedown', e => {
-    threeDrag = { x: e.clientX, y: e.clientY, rx: threeRotation.x, ry: threeRotation.y };
-    threeAnimating = false;
-    e.preventDefault();
-  });
-  window.addEventListener('mousemove', e => {
-    if (!threeDrag) return;
-    const dx = (e.clientX - threeDrag.x) * 0.01;
-    const dy = (e.clientY - threeDrag.y) * 0.01;
-    threeRotation.y = threeDrag.ry + dx;
-    threeRotation.x = threeDrag.rx + dy;
-  });
-  window.addEventListener('mouseup', () => { threeDrag = null; });
-  newCanvas.addEventListener('wheel', e => {
-    e.preventDefault();
-    threeZoom = Math.max(1.5, Math.min(8, threeZoom + e.deltaY * 0.002));
-  }, { passive: false });
-  newCanvas.addEventListener('dblclick', () => {
-    threeRotation = { x: 0.4, y: 0.6 };
-    threeZoom = 3;
-    threeAnimating = true;
-  });
 }
 
 function animateThree() {
@@ -1754,8 +1790,6 @@ function getCurrentMaterial() { return state.materials[state.tuneIndex]; }
 
 async function initTuneStep() {
   initThreeScene();
-  // Re-bind interaction because we re-grab the canvas in initThreeScene
-  bindPreviewInteraction();
   state.tuneIndex = 0;
   state.tuneView = 'rendered';
   // Clear stale caches
