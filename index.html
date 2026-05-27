@@ -1,892 +1,2230 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>UV Material Painter | PBR Map Generator</title>
-  <style>
-    * {
-      box-sizing: border-box;
-      user-select: none; /* avoid accidental text selection while drawing */
-    }
+<meta charset="UTF-8">
+<title>UV Material Painter</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+<style>
+  :root {
+    --bg: #0c0c0c;
+    --panel: #161616;
+    --panel-2: #1d1d1d;
+    --border: #2a2a2a;
+    --border-light: #3a3a3a;
+    --text: #e8e8e8;
+    --muted: #777;
+    --muted-2: #555;
+    --accent: #ff6b1a;
+    --accent-dim: #b34a10;
+    --accent-glow: rgba(255, 107, 26, 0.15);
+    --danger: #ff3344;
+    --success: #4ade80;
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: var(--mono); font-size: 13px;
+    overflow: hidden;
+    background-image:
+      radial-gradient(circle at 0% 0%, rgba(255, 107, 26, 0.04), transparent 40%),
+      radial-gradient(circle at 100% 100%, rgba(255, 107, 26, 0.02), transparent 40%);
+  }
+  .app { display: flex; flex-direction: column; height: 100vh; }
 
-    :root {
-      --bg: #0a0a0c;
-      --panel: #111114;
-      --panel2: #18181c;
-      --border: #2a2a30;
-      --accent: #ff7b2c;
-      --accent-glow: rgba(255, 123, 44, 0.2);
-      --text: #eaeef2;
-      --muted: #8e8e9a;
-      --mono: 'JetBrains Mono', 'SF Mono', monospace;
-    }
+  header {
+    height: 48px; background: var(--panel);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; padding: 0 16px;
+    gap: 16px; flex-shrink: 0;
+  }
+  .logo {
+    font-weight: 700; letter-spacing: 0.04em;
+    color: var(--accent);
+    text-transform: uppercase; font-size: 13px;
+    display: flex; align-items: center; gap: 8px;
+    flex-shrink: 0;
+  }
+  .logo::before {
+    content: ''; width: 10px; height: 10px;
+    background: var(--accent);
+    box-shadow: 0 0 12px var(--accent);
+  }
+  .stepper {
+    display: flex; align-items: center; gap: 4px;
+    flex: 1; justify-content: center; overflow-x: auto;
+    min-width: 0;
+  }
+  .step {
+    display: flex; align-items: center; gap: 6px;
+    padding: 6px 8px;
+    color: var(--muted-2); font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    cursor: pointer; transition: color 0.15s;
+    white-space: nowrap; flex-shrink: 0;
+  }
+  .step .num {
+    width: 18px; height: 18px;
+    border: 1px solid var(--border-light);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px;
+  }
+  .step.active { color: var(--accent); }
+  .step.active .num { border-color: var(--accent); background: var(--accent-glow); color: var(--accent); }
+  .step.done { color: var(--text); }
+  .step.done .num { border-color: var(--success); color: var(--success); }
+  .step:hover { color: var(--text); }
+  .step-divider { width: 8px; height: 1px; background: var(--border); flex-shrink: 0; }
 
-    body {
-      margin: 0;
-      background: var(--bg);
-      color: var(--text);
-      font-family: var(--mono);
-      font-size: 13px;
-      overflow: hidden;
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
+  main { flex: 1; display: flex; overflow: hidden; }
+  .stage { flex: 1; display: none; overflow: hidden; position: relative; }
+  .stage.active { display: flex; }
 
-    /* header */
-    .app-header {
-      background: var(--panel);
-      border-bottom: 1px solid var(--border);
-      padding: 0 20px;
-      height: 52px;
-      display: flex;
-      align-items: center;
-      gap: 20px;
-      flex-shrink: 0;
-    }
-    .logo {
-      font-weight: 700;
-      color: var(--accent);
-      letter-spacing: 2px;
-      font-size: 14px;
-    }
-    .stepper {
-      display: flex;
-      gap: 4px;
-      flex-wrap: wrap;
-      flex: 1;
-      overflow-x: auto;
-      white-space: nowrap;
-    }
-    .step {
-      padding: 6px 12px;
-      font-size: 11px;
-      font-weight: 500;
-      cursor: pointer;
-      color: var(--muted);
-      border-radius: 20px;
-      transition: 0.1s;
-    }
-    .step.active {
-      background: var(--accent-glow);
-      color: var(--accent);
-    }
-    .step.done {
-      color: var(--text);
-    }
-    button {
-      background: var(--panel2);
-      border: 1px solid var(--border);
-      color: var(--text);
-      font-family: var(--mono);
-      font-size: 11px;
-      padding: 6px 14px;
-      cursor: pointer;
-      border-radius: 6px;
-      transition: 0.1s;
-    }
-    button.primary {
-      background: var(--accent);
-      border-color: var(--accent);
-      color: black;
-      font-weight: 600;
-    }
-    button:hover {
-      filter: brightness(1.1);
-      border-color: var(--accent);
-    }
-    .main {
-      flex: 1;
-      display: flex;
-      overflow: hidden;
-      position: relative;
-    }
-    .stage {
-      display: none;
-      width: 100%;
-      height: 100%;
-      overflow: auto;
-      padding: 24px;
-    }
-    .stage.active {
-      display: flex;
-      flex-direction: column;
-    }
-    .footer {
-      background: var(--panel);
-      border-top: 1px solid var(--border);
-      padding: 10px 20px;
-      display: flex;
-      gap: 12px;
-      align-items: center;
-      flex-shrink: 0;
-    }
-    .footer .spacer {
-      flex: 1;
-    }
-    .info-text {
-      font-size: 11px;
-      color: var(--muted);
-    }
+  .work {
+    flex: 1; display: flex; align-items: center; justify-content: center;
+    padding: 24px; overflow: auto; position: relative;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+  /* For tune step, content can be tall, align to start so top isn't cut off */
+  .work.scroll-top { align-items: flex-start; padding-top: 24px; }
 
-    /* draw toolbar & canvas zoom/pan */
-    .draw-layout {
-      display: flex;
-      flex: 1;
-      gap: 16px;
-      overflow: hidden;
-    }
-    .draw-canvas-area {
-      flex: 1;
-      background: #050505;
-      border-radius: 8px;
-      overflow: auto;
-      position: relative;
-      border: 1px solid var(--border);
-    }
-    .draw-canvas-area canvas {
-      display: block;
-      transform-origin: 0 0;
-      cursor: crosshair;
-    }
-    .draw-tools {
-      width: 260px;
-      background: var(--panel);
-      border-radius: 8px;
-      padding: 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-      overflow-y: auto;
-    }
-    .tool-group {
-      display: flex;
-      gap: 6px;
-      flex-wrap: wrap;
-    }
-    .tool-btn {
-      background: var(--panel2);
-      border: 1px solid var(--border);
-      padding: 6px 12px;
-      cursor: pointer;
-      border-radius: 20px;
-      font-size: 12px;
-    }
-    .tool-btn.active {
-      background: var(--accent);
-      color: black;
-      border-color: var(--accent);
-    }
-    .material-pill {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px;
-      border-bottom: 1px solid var(--border);
-      cursor: pointer;
-    }
-    .material-pill.active {
-      background: var(--accent-glow);
-    }
-    .color-swatch {
-      width: 20px;
-      height: 20px;
-      border-radius: 4px;
-    }
-    .shape-item {
-      display: flex;
-      justify-content: space-between;
-      padding: 4px 0;
-      font-size: 11px;
-    }
+  .panel {
+    width: 320px; background: var(--panel);
+    border-left: 1px solid var(--border);
+    display: flex; flex-direction: column;
+    overflow-y: auto; flex-shrink: 0;
+  }
+  .panel-section { padding: 16px; border-bottom: 1px solid var(--border); }
+  .panel-section h3 {
+    font-size: 10px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.12em;
+    color: var(--muted); margin-bottom: 12px;
+  }
 
-    /* quality grid */
-    .quality-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 20px;
-      max-width: 900px;
-      margin: 0 auto;
-    }
-    .quality-card {
-      background: var(--panel);
-      border: 1px solid var(--border);
-      padding: 20px;
-      border-radius: 12px;
-      cursor: pointer;
-    }
-    .quality-card.selected {
-      border-color: var(--accent);
-      background: var(--accent-glow);
-    }
+  .dropzone {
+    width: 520px; max-width: 80vw;
+    aspect-ratio: 1;
+    border: 1px dashed var(--border-light);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 16px; cursor: pointer;
+    transition: all 0.2s;
+    background: var(--panel);
+    position: relative;
+  }
+  .dropzone:hover, .dropzone.dragover {
+    border-color: var(--accent); background: var(--accent-glow);
+  }
+  .dropzone-icon { font-size: 32px; color: var(--muted); line-height: 1; }
+  .dropzone:hover .dropzone-icon, .dropzone.dragover .dropzone-icon { color: var(--accent); }
+  .dropzone-title { font-size: 14px; font-weight: 600; }
+  .dropzone-hint { font-size: 11px; color: var(--muted); text-align: center; padding: 0 16px; }
+  input[type=file] { display: none; }
+  .dropzone-actions {
+    display: flex; gap: 8px; margin-top: 12px;
+  }
 
-    /* albedo grid */
-    .albedo-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-      gap: 16px;
-    }
-    .albedo-card {
-      background: var(--panel);
-      border-radius: 8px;
-      padding: 12px;
-    }
-    .albedo-preview {
-      aspect-ratio: 1;
-      background: #1e1e24;
-      margin-top: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      border: 1px dashed var(--border);
-      overflow: hidden;
-    }
-    .albedo-preview img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
+  button, .btn {
+    font-family: var(--mono); font-size: 11px; font-weight: 500;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    padding: 8px 14px; border: 1px solid var(--border-light);
+    background: var(--panel-2); color: var(--text);
+    cursor: pointer; transition: all 0.15s;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  button:hover, .btn:hover { border-color: var(--accent); color: var(--accent); }
+  button:disabled { opacity: 0.4; cursor: not-allowed; }
+  button:disabled:hover { border-color: var(--border-light); color: var(--text); }
+  button.primary {
+    background: var(--accent); border-color: var(--accent); color: #0c0c0c;
+    font-weight: 700;
+  }
+  button.primary:hover { background: #ff8740; border-color: #ff8740; color: #0c0c0c; }
+  button.icon { width: 28px; height: 28px; padding: 0; justify-content: center; }
+  .btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
 
-    /* tune panel */
-    .tune-layout {
-      display: flex;
-      gap: 24px;
-      flex-wrap: wrap;
-    }
-    .tune-3d {
-      flex: 2;
-      min-width: 300px;
-      background: #000;
-      border-radius: 12px;
-      overflow: hidden;
-      aspect-ratio: 1;
-    }
-    .tune-3d canvas {
-      width: 100%;
-      height: 100%;
-      display: block;
-    }
-    .tune-controls {
-      flex: 1;
-      min-width: 260px;
-      background: var(--panel);
-      border-radius: 12px;
-      padding: 18px;
-      overflow-y: auto;
-    }
-    .slider-group {
-      margin-bottom: 16px;
-    }
-    .slider-group label {
-      display: flex;
-      justify-content: space-between;
-      font-size: 11px;
-    }
-    input[type="range"] {
-      width: 100%;
-      margin: 6px 0;
-      background: var(--panel2);
-      height: 3px;
-      -webkit-appearance: none;
-    }
-    input[type="range"]:focus {
-      outline: none;
-    }
-    input[type="range"]::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      width: 12px;
-      height: 12px;
-      background: var(--accent);
-      border-radius: 0;
-      cursor: pointer;
-    }
+  .footer-bar {
+    height: 56px; background: var(--panel);
+    border-top: 1px solid var(--border);
+    display: flex; align-items: center; padding: 0 16px; gap: 8px;
+    flex-shrink: 0;
+  }
+  .footer-bar .spacer { flex: 1; }
+  .footer-info { font-size: 11px; color: var(--muted); }
 
-    .maps-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 16px;
-    }
-    .map-preview {
-      background: var(--panel);
-      border-radius: 8px;
-      padding: 8px;
-    }
-    .toast {
-      position: fixed;
-      bottom: 70px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #222;
-      color: var(--accent);
-      padding: 8px 20px;
-      border-radius: 40px;
-      font-size: 12px;
-      pointer-events: none;
-      opacity: 0;
-      transition: 0.15s;
-      z-index: 200;
-    }
-  </style>
+  .material-row {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px; border: 1px solid var(--border);
+    margin-bottom: 6px; background: var(--panel-2);
+    cursor: pointer; transition: all 0.15s;
+  }
+  .material-row.active { border-color: var(--accent); background: var(--accent-glow); }
+  .material-row:hover { border-color: var(--border-light); }
+  .material-row.active:hover { border-color: var(--accent); }
+  .swatch {
+    width: 22px; height: 22px;
+    border: 1px solid var(--border-light); cursor: pointer;
+    position: relative; flex-shrink: 0;
+  }
+  .swatch input { position: absolute; opacity: 0; width: 100%; height: 100%; cursor: pointer; }
+  .material-name {
+    flex: 1; background: transparent; border: none;
+    color: var(--text); font-family: var(--mono); font-size: 12px;
+    outline: none; padding: 4px 0;
+    min-width: 0;
+  }
+  .material-name:focus { color: var(--accent); }
+  .material-count { font-size: 10px; color: var(--muted); background: var(--bg); padding: 2px 6px; }
+  .material-delete {
+    width: 22px; height: 22px; padding: 0;
+    justify-content: center;
+    border: 1px solid transparent; background: transparent;
+  }
+  .material-delete:hover { border-color: var(--danger); color: var(--danger); }
+
+  .canvas-wrap {
+    position: relative;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    box-shadow: 0 0 60px rgba(0,0,0,0.5);
+  }
+  /* Wrap canvas in scrollable container for zoom/pan in draw step */
+  .canvas-zoom-wrap {
+    max-width: 75vw; max-height: 70vh;
+    overflow: auto;
+    background: #050505;
+    border: 1px solid var(--border);
+    display: inline-block;
+  }
+  #drawCanvas { display: block; cursor: crosshair; }
+  #cropCanvas { display: block; }
+  .canvas-toolbar {
+    display: flex; gap: 8px; align-items: center;
+    margin-bottom: 8px; flex-wrap: wrap;
+    font-size: 11px; color: var(--muted);
+  }
+
+  .field { margin-bottom: 14px; }
+  .field label {
+    display: flex; justify-content: space-between;
+    font-size: 10px; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.08em;
+    margin-bottom: 6px;
+  }
+  .field label .val { color: var(--accent); font-weight: 600; }
+  .field .field-hint {
+    font-size: 10px; color: var(--muted-2);
+    margin-top: 4px; font-style: italic;
+    line-height: 1.4;
+  }
+  input[type=range] {
+    width: 100%; appearance: none; -webkit-appearance: none;
+    height: 4px; background: var(--panel-2); outline: none; cursor: pointer;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    appearance: none; -webkit-appearance: none;
+    width: 14px; height: 14px; background: var(--accent); cursor: pointer;
+  }
+  input[type=range]::-moz-range-thumb {
+    width: 14px; height: 14px; background: var(--accent);
+    cursor: pointer; border: none; border-radius: 0;
+  }
+  select, input[type=text], input[type=number] {
+    width: 100%; background: var(--panel-2);
+    border: 1px solid var(--border); color: var(--text);
+    padding: 6px 8px; font-family: var(--mono); font-size: 12px;
+    outline: none;
+  }
+  select:focus, input:focus { border-color: var(--accent); }
+
+  .toggle {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 11px; cursor: pointer;
+    margin-bottom: 8px;
+  }
+  .toggle input { display: none; }
+  .toggle-switch {
+    width: 28px; height: 14px;
+    background: var(--panel-2);
+    border: 1px solid var(--border-light);
+    position: relative; transition: all 0.15s;
+    flex-shrink: 0;
+  }
+  .toggle-switch::after {
+    content: ''; width: 8px; height: 8px;
+    background: var(--muted); position: absolute;
+    top: 2px; left: 2px; transition: all 0.15s;
+  }
+  .toggle input:checked + .toggle-switch {
+    background: var(--accent-glow); border-color: var(--accent);
+  }
+  .toggle input:checked + .toggle-switch::after {
+    left: 16px; background: var(--accent);
+  }
+
+  .quality-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;
+    max-width: 720px; width: 100%;
+  }
+  .quality-card {
+    background: var(--panel); border: 1px solid var(--border);
+    padding: 24px; cursor: pointer; transition: all 0.15s;
+    text-align: left;
+  }
+  .quality-card:hover { border-color: var(--border-light); transform: translateY(-2px); }
+  .quality-card.selected { border-color: var(--accent); background: var(--accent-glow); }
+  .quality-res {
+    font-size: 22px; font-weight: 700;
+    color: var(--accent); margin-bottom: 4px;
+    letter-spacing: 0.02em;
+  }
+  .quality-tag {
+    font-size: 10px; text-transform: uppercase;
+    letter-spacing: 0.12em; color: var(--text);
+    margin-bottom: 8px; font-weight: 600;
+  }
+  .quality-desc { font-size: 11px; color: var(--muted); line-height: 1.6; }
+
+  .crop-stage { position: relative; user-select: none; }
+  .crop-canvas-wrap {
+    position: relative; background: #050505;
+    border: 1px solid var(--border); overflow: hidden;
+  }
+  .crop-canvas-wrap canvas { display: block; }
+  .crop-overlay { position: absolute; inset: 0; pointer-events: none; }
+  .crop-window {
+    position: absolute;
+    border: 2px solid var(--accent);
+    box-shadow: 0 0 0 9999px rgba(0,0,0,0.65);
+    cursor: move; pointer-events: auto;
+  }
+  .crop-handle {
+    position: absolute;
+    width: 14px; height: 14px;
+    background: var(--accent);
+    border: 2px solid #0c0c0c;
+    pointer-events: auto;
+  }
+  .crop-handle.tl { top: -7px; left: -7px; cursor: nwse-resize; }
+  .crop-handle.tr { top: -7px; right: -7px; cursor: nesw-resize; }
+  .crop-handle.bl { bottom: -7px; left: -7px; cursor: nesw-resize; }
+  .crop-handle.br { bottom: -7px; right: -7px; cursor: nwse-resize; }
+  .crop-instruction { font-size: 11px; color: var(--muted); margin-top: 12px; text-align: center; }
+
+  .albedo-grid {
+    display: grid; gap: 12px;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  }
+  .albedo-card {
+    background: var(--panel); border: 1px solid var(--border);
+    padding: 12px;
+  }
+  .albedo-card-head {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 10px;
+  }
+  .albedo-card-head .name { font-weight: 600; flex: 1; font-size: 12px; }
+  .albedo-slot {
+    aspect-ratio: 1; border: 1px dashed var(--border-light);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; position: relative;
+    background: var(--bg); overflow: hidden;
+  }
+  .albedo-slot:hover { border-color: var(--accent); }
+  .albedo-slot.dragover { border-color: var(--accent); background: var(--accent-glow); }
+  .albedo-slot img {
+    position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+  }
+  .albedo-slot .placeholder {
+    color: var(--muted); font-size: 10px; text-align: center;
+    text-transform: uppercase; letter-spacing: 0.08em;
+  }
+
+  /* TUNE STEP layout */
+  .preview-container {
+    width: 100%; max-width: 1100px;
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    gap: 20px;
+    align-items: start;
+  }
+  @media (max-width: 900px) {
+    .preview-container { grid-template-columns: 1fr; }
+  }
+  .preview-main {
+    background: #000; border: 1px solid var(--border);
+    aspect-ratio: 1; position: relative; max-width: 100%;
+  }
+  .preview-canvas { width: 100%; height: 100%; display: block; }
+  .preview-tabs {
+    display: flex; gap: 4px; padding: 8px; background: var(--panel);
+    border: 1px solid var(--border); border-bottom: none;
+    flex-wrap: wrap;
+  }
+  .preview-tab {
+    flex: 1; min-width: 80px;
+    padding: 8px 6px; font-size: 10px;
+    text-align: center; cursor: pointer;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--muted); border: 1px solid var(--border);
+    background: var(--panel-2); transition: all 0.15s;
+  }
+  .preview-tab:hover { color: var(--text); }
+  .preview-tab.active {
+    color: var(--accent); border-color: var(--accent);
+    background: var(--accent-glow);
+  }
+  .material-nav {
+    display: flex; align-items: center; gap: 8px;
+    padding: 12px 16px; background: var(--panel-2);
+    border: 1px solid var(--border);
+    margin-bottom: 12px;
+  }
+  .material-nav .label { flex: 1; font-size: 12px; font-weight: 600; }
+  .material-nav .swatch { width: 18px; height: 18px; }
+  .material-counter { font-size: 10px; color: var(--muted); margin-right: 8px; }
+
+  .maps-grid {
+    display: grid; gap: 16px;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    max-width: 1100px; margin: 0 auto;
+  }
+  .map-card {
+    background: var(--panel); border: 1px solid var(--border);
+    overflow: hidden;
+  }
+  .map-card-head {
+    display: flex; align-items: center; padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    background: var(--panel-2);
+  }
+  .map-card-head .label {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em;
+    flex: 1; color: var(--accent); font-weight: 600;
+  }
+  .map-card canvas {
+    display: block; width: 100%; height: auto;
+    background: repeating-conic-gradient(#1a1a1a 0% 25%, #222 0% 50%) 50% / 16px 16px;
+    image-rendering: pixelated;
+  }
+
+  .toolbar {
+    display: flex; flex-direction: column; gap: 4px;
+    padding: 8px; background: var(--panel);
+    border-right: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .tool {
+    width: 40px; height: 40px;
+    display: flex; align-items: center; justify-content: center;
+    border: 1px solid var(--border); background: var(--panel-2);
+    cursor: pointer; font-size: 14px; color: var(--muted);
+    transition: all 0.15s;
+  }
+  .tool:hover { color: var(--text); border-color: var(--border-light); }
+  .tool.active { color: var(--accent); border-color: var(--accent); background: var(--accent-glow); }
+  .tool-divider { height: 1px; background: var(--border); margin: 4px 0; }
+
+  .toast {
+    position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+    background: var(--panel); border: 1px solid var(--accent);
+    padding: 12px 20px; color: var(--accent);
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em;
+    z-index: 1000; opacity: 0; transition: opacity 0.2s;
+    pointer-events: none;
+  }
+  .toast.show { opacity: 1; }
+
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border-light); }
+  ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+  .advanced-section {
+    border-top: 1px dashed var(--border-light);
+    padding-top: 12px; margin-top: 0;
+  }
+  .advanced-section.collapsed > *:not(.advanced-toggle) { display: none; }
+  .advanced-toggle {
+    font-size: 10px; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.12em;
+    cursor: pointer; padding: 4px 0;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .advanced-toggle::before { content: '▾'; transition: transform 0.15s; }
+  .advanced-section.collapsed .advanced-toggle::before { transform: rotate(-90deg); }
+
+  .busy-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7);
+    display: none; align-items: center; justify-content: center;
+    z-index: 2000; color: var(--accent);
+    font-size: 12px; text-transform: uppercase; letter-spacing: 0.12em;
+  }
+  .busy-overlay.show { display: flex; }
+</style>
 </head>
 <body>
+<div class="app">
+  <header>
+    <div class="logo">UV·PAINTER</div>
+    <div class="stepper">
+      <div class="step active" data-step="0"><span class="num">0</span><span>Quality</span></div>
+      <div class="step-divider"></div>
+      <div class="step" data-step="1"><span class="num">1</span><span>Upload</span></div>
+      <div class="step-divider"></div>
+      <div class="step" data-step="2"><span class="num">2</span><span>Crop</span></div>
+      <div class="step-divider"></div>
+      <div class="step" data-step="3"><span class="num">3</span><span>Materials</span></div>
+      <div class="step-divider"></div>
+      <div class="step" data-step="4"><span class="num">4</span><span>Draw</span></div>
+      <div class="step-divider"></div>
+      <div class="step" data-step="5"><span class="num">5</span><span>Albedos</span></div>
+      <div class="step-divider"></div>
+      <div class="step" data-step="6"><span class="num">6</span><span>Tune</span></div>
+      <div class="step-divider"></div>
+      <div class="step" data-step="7"><span class="num">7</span><span>Export</span></div>
+    </div>
+    <button class="btn" id="resetAll">Reset</button>
+  </header>
 
-<div class="app-header">
-  <div class="logo">UV·PAINTER</div>
-  <div class="stepper" id="stepper"></div>
-  <button id="resetBtn">⟳ Reset</button>
+  <main>
+
+    <!-- STEP 0: QUALITY -->
+    <section class="stage active" data-stage="0">
+      <div class="work">
+        <div style="text-align:center; width:100%;">
+          <h2 style="font-size:16px; margin-bottom:4px;">Choose output quality</h2>
+          <p style="font-size:11px; color:var(--muted); margin-bottom:24px;">
+            Pick based on how close the player sees this object. Affects final PNG resolution.
+          </p>
+          <div class="quality-grid" id="qualityGrid">
+            <div class="quality-card" data-res="2048">
+              <div class="quality-res">2048 × 2048</div>
+              <div class="quality-tag">HERO</div>
+              <div class="quality-desc">Held items, weapons, examined props, main character gear.</div>
+            </div>
+            <div class="quality-card selected" data-res="1024">
+              <div class="quality-res">1024 × 1024</div>
+              <div class="quality-tag">MIDGROUND</div>
+              <div class="quality-desc">Furniture, props you walk past but don't interact with.</div>
+            </div>
+            <div class="quality-card" data-res="512">
+              <div class="quality-res">512 × 512</div>
+              <div class="quality-tag">BACKGROUND</div>
+              <div class="quality-desc">Buildings, distant trees, skybox props.</div>
+            </div>
+            <div class="quality-card" data-res="256">
+              <div class="quality-res">256 × 256</div>
+              <div class="quality-tag">ULTRA FAR</div>
+              <div class="quality-desc">Barely visible silhouettes, LOD versions, background fillers.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- STEP 1: UPLOAD -->
+    <section class="stage" data-stage="1">
+      <div class="work">
+        <div id="uvDropContainer">
+          <div class="dropzone" id="uvDrop">
+            <div class="dropzone-icon">▦</div>
+            <div class="dropzone-title">Drop your UV layout</div>
+            <div class="dropzone-hint">PNG / JPG · screenshot or export of the flat unwrapped UV</div>
+            <div class="dropzone-actions">
+              <button class="btn" id="browseBtn">Browse Files</button>
+            </div>
+            <input type="file" id="uvFile" accept="image/*">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- STEP 2: CROP -->
+    <section class="stage" data-stage="2">
+      <div class="work" style="flex-direction:column;">
+        <div style="text-align:center; margin-bottom:16px;">
+          <h2 style="font-size:14px; margin-bottom:4px;">Crop to 1:1 square</h2>
+          <p style="font-size:11px; color:var(--muted);">
+            Drag the box to position · drag corners to resize · the bright square is what gets used
+          </p>
+        </div>
+        <div class="crop-stage">
+          <div class="crop-canvas-wrap" id="cropCanvasWrap">
+            <canvas id="cropCanvas"></canvas>
+            <div class="crop-overlay">
+              <div class="crop-window" id="cropWindow">
+                <div class="crop-handle tl" data-handle="tl"></div>
+                <div class="crop-handle tr" data-handle="tr"></div>
+                <div class="crop-handle bl" data-handle="bl"></div>
+                <div class="crop-handle br" data-handle="br"></div>
+              </div>
+            </div>
+          </div>
+          <div class="crop-instruction">
+            <button class="btn" id="cropReset" style="margin-top: 12px;">Reset Crop</button>
+            <button class="btn" id="cropFit" style="margin-top: 12px;">Fit to Image</button>
+            <button class="btn" id="cropChangeImage" style="margin-top: 12px;">Use Different Image</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- STEP 3: MATERIALS -->
+    <section class="stage" data-stage="3">
+      <div class="work">
+        <div style="width: 480px; max-width: 90vw;">
+          <h2 style="font-size:14px; margin-bottom:8px;">Define your materials</h2>
+          <p style="font-size:11px; color: var(--muted); margin-bottom:20px;">
+            One row per surface type — wood, metal, fabric, whatever. Color is just for the mask preview.
+          </p>
+          <div id="materialsList"></div>
+          <button class="btn" id="addMaterial" style="margin-top: 8px;">+ Add Material</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- STEP 4: DRAW -->
+    <section class="stage" data-stage="4">
+      <div class="toolbar">
+        <div class="tool active" data-tool="polygon" title="Polygon (P)">⬠</div>
+        <div class="tool" data-tool="erase" title="Delete shape (D)">⌫</div>
+        <div class="tool-divider"></div>
+        <div class="tool" id="undoBtn" title="Undo (Ctrl+Z)">↶</div>
+        <div class="tool" id="clearShapeBtn" title="Cancel shape (Esc)">✕</div>
+        <div class="tool-divider"></div>
+        <div class="tool" id="zoomInBtn" title="Zoom in (+)">+</div>
+        <div class="tool" id="zoomOutBtn" title="Zoom out (-)">−</div>
+        <div class="tool" id="zoomResetBtn" title="Fit (0)">⊡</div>
+      </div>
+      <div class="work" style="flex-direction:column; align-items:center; justify-content:flex-start; padding-top:16px;">
+        <div class="canvas-toolbar">
+          <span>Zoom: <span id="zoomLevel">100%</span></span>
+          <span>·</span>
+          <span>Click to add points · click first point to close · scroll to zoom · Esc to cancel</span>
+        </div>
+        <div class="canvas-zoom-wrap" id="drawZoomWrap">
+          <canvas id="drawCanvas"></canvas>
+        </div>
+      </div>
+      <aside class="panel">
+        <div class="panel-section">
+          <h3>Active Material</h3>
+          <div id="drawMaterialsList"></div>
+        </div>
+        <div class="panel-section">
+          <h3>Shapes (<span id="shapeCount">0</span>)</h3>
+          <div id="shapesList"></div>
+        </div>
+        <div class="panel-section">
+          <h3>Display</h3>
+          <div class="field">
+            <label>UV Opacity <span class="val" id="uvOpacityVal">100%</span></label>
+            <input type="range" id="uvOpacity" min="0" max="100" value="100">
+          </div>
+          <div class="field">
+            <label>Mask Opacity <span class="val" id="maskOpacityVal">50%</span></label>
+            <input type="range" id="maskOpacity" min="0" max="100" value="50">
+          </div>
+        </div>
+      </aside>
+    </section>
+
+    <!-- STEP 5: ALBEDOS -->
+    <section class="stage" data-stage="5">
+      <div class="work">
+        <div style="width: 100%; max-width: 880px;">
+          <h2 style="font-size:14px; margin-bottom:8px;">Upload material albedos</h2>
+          <p style="font-size:11px; color: var(--muted); margin-bottom:20px;">
+            One texture per material. Should tile seamlessly for best results. You can skip uploads for materials you want to use the flat color for.
+          </p>
+          <div class="albedo-grid" id="albedoGrid"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- STEP 6: TUNE -->
+    <section class="stage" data-stage="6">
+      <div class="work scroll-top">
+        <div class="preview-container">
+          <div>
+            <div class="material-nav">
+              <span class="swatch" id="tuneMatSwatch"></span>
+              <span class="label" id="tuneMatName">—</span>
+              <span class="material-counter" id="tuneMatCounter">— / —</span>
+              <button class="btn" id="tunePrev">← Prev</button>
+              <button class="btn" id="tuneNext">Next →</button>
+            </div>
+            <div class="preview-tabs" id="previewTabs">
+              <div class="preview-tab active" data-view="rendered">Rendered</div>
+              <div class="preview-tab" data-view="albedo">Albedo</div>
+              <div class="preview-tab" data-view="normal">Normal</div>
+              <div class="preview-tab" data-view="roughness">Roughness</div>
+              <div class="preview-tab" data-view="metallic">Metallic</div>
+            </div>
+            <div class="preview-main">
+              <canvas id="previewCanvas" class="preview-canvas"></canvas>
+            </div>
+            <p style="font-size:10px; color:var(--muted); text-align:center; margin-top:8px;">
+              Drag to rotate · scroll to zoom · double-click to reset view
+            </p>
+          </div>
+          <aside style="overflow-y: auto;">
+            <div class="panel-section">
+              <h3>Normal Map</h3>
+              <div class="field">
+                <label>Strength <span class="val" id="tuneNormalStrengthVal">2.0</span></label>
+                <input type="range" id="tuneNormalStrength" min="0" max="10" step="0.1" value="2">
+                <div class="field-hint">Smooth materials: 0.5–1.5 · Rough textures: 2–4 · Heavy detail: 5+</div>
+              </div>
+            </div>
+            <div class="panel-section">
+              <h3>Roughness</h3>
+              <div class="field">
+                <label>Base <span class="val" id="tuneRoughnessBaseVal">0.50</span></label>
+                <input type="range" id="tuneRoughnessBase" min="0" max="1" step="0.01" value="0.5">
+                <div class="field-hint">Polished metal: 0.05–0.15 · Plastic: 0.3–0.5 · Wood: 0.5–0.7 · Cloth/rubber: 0.7–0.95</div>
+              </div>
+              <div class="field">
+                <label>Detail Contrast <span class="val" id="tuneRoughnessContrastVal">1.0</span></label>
+                <input type="range" id="tuneRoughnessContrast" min="0" max="3" step="0.05" value="1">
+                <div class="field-hint">How much albedo detail varies roughness around base</div>
+              </div>
+              <label class="toggle">
+                <input type="checkbox" id="tuneRoughnessInvert">
+                <span class="toggle-switch"></span>
+                Invert (light = rough)
+              </label>
+            </div>
+            <div class="panel-section">
+              <h3>Metallic</h3>
+              <div class="field">
+                <label>Value <span class="val" id="tuneMetallicVal">0.00</span></label>
+                <input type="range" id="tuneMetallic" min="0" max="1" step="0.01" value="0">
+                <div class="field-hint">Pure metal: 1.0 · Pure non-metal: 0.0 · Almost never anywhere between</div>
+              </div>
+            </div>
+            <div class="panel-section">
+              <h3>Specular</h3>
+              <div class="field">
+                <label>Value <span class="val" id="tuneSpecularVal">0.50</span></label>
+                <input type="range" id="tuneSpecular" min="0" max="1" step="0.01" value="0.5">
+                <div class="field-hint">For non-metals. 0.5 = IOR 1.5 (most plastics/paint). Leave at 0.5 unless you know the IOR.</div>
+              </div>
+            </div>
+            <div class="panel-section">
+              <h3>Tiling</h3>
+              <div class="field">
+                <label>Scale <span class="val" id="tuneTileScaleVal">1.0×</span></label>
+                <input type="range" id="tuneTileScale" min="0.1" max="8" step="0.1" value="1">
+                <div class="field-hint">How many times the texture repeats inside the mask</div>
+              </div>
+              <div class="field">
+                <label>Rotation <span class="val" id="tuneTileRotVal">0°</span></label>
+                <input type="range" id="tuneTileRot" min="0" max="360" step="1" value="0">
+              </div>
+            </div>
+            <div class="panel-section advanced-section collapsed" id="advancedSection">
+              <div class="advanced-toggle" id="advancedToggle">Advanced (sheen, fabric)</div>
+              <div class="field" style="margin-top: 12px;">
+                <label class="toggle" style="margin-bottom: 12px;">
+                  <input type="checkbox" id="tuneSheenEnabled">
+                  <span class="toggle-switch"></span>
+                  Enable sheen
+                </label>
+              </div>
+              <div class="field">
+                <label>Sheen Amount <span class="val" id="tuneSheenVal">0.00</span></label>
+                <input type="range" id="tuneSheen" min="0" max="1" step="0.01" value="0" disabled>
+                <div class="field-hint">Grazing highlight for fabric, velvet, dust.</div>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <!-- STEP 7: EXPORT -->
+    <section class="stage" data-stage="7">
+      <div class="work scroll-top" style="flex-direction: column; align-items: stretch; padding: 24px 32px;">
+        <div style="display:flex; align-items:center; gap:16px; margin-bottom:20px;">
+          <div>
+            <h2 style="font-size:14px;">Generated PBR Maps</h2>
+            <p style="font-size:11px; color: var(--muted); margin-top:4px;">
+              Click Download under any map · output is <span id="exportSize" style="color: var(--accent);">—</span>
+            </p>
+          </div>
+          <div style="flex:1;"></div>
+          <button class="primary" id="downloadAll">↓ Download All</button>
+        </div>
+        <div class="maps-grid" id="mapsGrid"></div>
+      </div>
+    </section>
+
+  </main>
+
+  <div class="footer-bar">
+    <button id="prevBtn">← Back</button>
+    <div class="spacer"></div>
+    <div class="footer-info" id="footerInfo">Step 0 — Choose output quality</div>
+    <div class="spacer"></div>
+    <button class="primary" id="nextBtn">Next →</button>
+  </div>
 </div>
 
-<div class="main" id="mainStage">
-  <!-- each stage injected dynamically -->
-</div>
-
-<div class="footer">
-  <button id="backBtn">← Back</button>
-  <div class="spacer"></div>
-  <div class="info-text" id="stepInfo">Step 0: Quality</div>
-  <div class="spacer"></div>
-  <button id="nextBtn" class="primary">Next →</button>
-</div>
-<div id="toastMsg" class="toast"></div>
+<div class="toast" id="toast"></div>
+<div class="busy-overlay" id="busyOverlay">Processing…</div>
 
 <script type="module">
-  // ------------------- STATE -------------------
-  let currentStep = 0;
-  const steps = ['quality', 'upload', 'crop', 'materials', 'draw', 'albedos', 'tune', 'export'];
-  
-  let exportRes = 1024;          // default midground
-  let originalUVImage = null;    // raw uploaded image
-  let croppedUVCanvas = null;    // final 1:1 cropped UV
-  let uvWidth = 0, uvHeight = 0;
-  
-  let materials = [
-    { id: 'mat1', name: 'Wood', color: '#b87c4f', albedoImg: null, roughnessBase: 0.55, roughnessContrast: 1.0, metallic: 0.0, specular: 0.5, normalStrength: 2.2, tileScale: 1.0, tileRot: 0, sheen: 0, sheenEnabled: false },
-    { id: 'mat2', name: 'Metal', color: '#aaaab0', albedoImg: null, roughnessBase: 0.2, roughnessContrast: 1.2, metallic: 0.95, specular: 0.5, normalStrength: 1.8, tileScale: 1.0, tileRot: 0, sheen: 0, sheenEnabled: false },
-    { id: 'mat3', name: 'Fabric', color: '#6a8a9a', albedoImg: null, roughnessBase: 0.8, roughnessContrast: 1.0, metallic: 0.0, specular: 0.4, normalStrength: 2.5, tileScale: 1.0, tileRot: 0, sheen: 0, sheenEnabled: false }
-  ];
-  let shapes = []; // { id, materialId, points: [{x,y}] }
-  let activeMaterialId = materials[0].id;
-  let currentPolygonPoints = [];
-  let nextShapeId = 100;
-  
-  // drawing transform (pan + zoom)
-  let drawZoom = 1.0;
-  let drawPanX = 0, drawPanY = 0;
-  let isPanning = false;
-  let lastPanX = 0, lastPanY = 0;
-  
-  // tune 3d lazy
-  let threeRenderer = null, threeScene = null, threeCamera = null, threeMesh = null, threeMaterialObj = null;
-  let tuneIndex = 0;
-  let threeActive = false;
-  
-  // UI helpers
-  function toast(msg) {
-    const el = document.getElementById('toastMsg');
-    el.textContent = msg;
-    el.style.opacity = '1';
-    setTimeout(() => el.style.opacity = '0', 1800);
+import * as THREE from 'three';
+
+// =========================================================================
+// STATE
+// =========================================================================
+const state = {
+  step: 0,
+  exportRes: 1024,
+  uvImageOriginal: null,
+  uvImage: null,
+  uvW: 0, uvH: 0,
+  crop: { x: 0, y: 0, size: 0 },
+  materials: [
+    makeMaterial(1, 'Material A', '#ff6b1a'),
+    makeMaterial(2, 'Material B', '#4ade80'),
+    makeMaterial(3, 'Material C', '#3b82f6'),
+  ],
+  nextMaterialId: 4,
+  shapes: [],
+  nextShapeId: 1,
+  currentShape: null,
+  activeMaterialId: 1,
+  tool: 'polygon',
+  uvOpacity: 1.0,
+  maskOpacity: 0.5,
+  hoveredShape: null,
+  // Draw step zoom
+  drawZoom: 1.0,
+  drawBaseW: 0,
+  drawBaseH: 0,
+  // Tune step
+  tuneIndex: 0,
+  tuneView: 'rendered',
+  // Final outputs
+  outputAlbedo: null, outputNormal: null, outputRoughness: null,
+  outputMetallic: null, outputAO: null, outputSpecular: null,
+};
+
+function makeMaterial(id, name, color) {
+  return {
+    id, name, color, albedo: null,
+    previewAlbedo: null,         // downscaled cache for tune step
+    normalStrength: 2.0,
+    roughnessBase: 0.5, roughnessContrast: 1.0, roughnessInvert: false,
+    metallic: 0, specular: 0.5,
+    tileScale: 1.0, tileRot: 0,
+    sheen: 0, sheenEnabled: false,
+  };
+}
+
+// =========================================================================
+// UTILITIES
+// =========================================================================
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => t.classList.remove('show'), 1800);
+}
+
+function busy(on) {
+  document.getElementById('busyOverlay').classList.toggle('show', on);
+}
+
+function pointInPolygon(pt, poly) {
+  let inside = false;
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const xi = poly[i][0], yi = poly[i][1];
+    const xj = poly[j][0], yj = poly[j][1];
+    if (((yi > pt[1]) !== (yj > pt[1])) &&
+        (pt[0] < (xj - xi) * (pt[1] - yi) / (yj - yi) + xi)) inside = !inside;
   }
-  
-  function renderStepper() {
-    const container = document.getElementById('stepper');
-    container.innerHTML = steps.map((s, idx) => `<div class="step ${idx === currentStep ? 'active' : (idx < currentStep ? 'done' : '')}" data-step="${idx}">${idx}. ${s.toUpperCase()}</div>`).join('');
-    document.querySelectorAll('.step').forEach(el => {
-      el.addEventListener('click', () => setStep(parseInt(el.dataset.step)));
-    });
-    document.getElementById('stepInfo').innerText = `Step ${currentStep}: ${steps[currentStep]}`;
-  }
-  
-  function setStep(step) {
-    if (step < 0 || step >= steps.length) return;
-    if (step === 2 && !croppedUVCanvas && originalUVImage) {
-      toast('Please crop the image first');
-      return;
-    }
-    if (step === 3 && !croppedUVCanvas) { toast('Need a cropped UV'); return; }
-    if (step === 4 && shapes.length === 0 && currentStep === 3) { toast('Add at least one material'); return; }
-    currentStep = step;
-    renderStepper();
-    renderCurrentStage();
-  }
-  
-  // ---------- Helper: crop canvas ----------
-  async function applyCrop(cropRect) {
-    if (!originalUVImage) return;
-    const size = Math.min(originalUVImage.width, originalUVImage.height);
-    const sx = cropRect?.x ?? ((originalUVImage.width - size)/2);
-    const sy = cropRect?.y ?? ((originalUVImage.height - size)/2);
-    const sz = cropRect?.size ?? size;
-    const canvas = document.createElement('canvas');
-    canvas.width = sz;
-    canvas.height = sz;
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(originalUVImage, sx, sy, sz, sz, 0, 0, sz, sz);
-    croppedUVCanvas = canvas;
-    uvWidth = sz;
-    uvHeight = sz;
-    toast(`UV cropped to ${sz}×${sz}`);
-  }
-  
-  // ---------- DRAWING: zoom/pan and polygon ----------
-  function initDrawCanvas(canvas, container) {
-    if (!croppedUVCanvas) return;
-    const ctx = canvas.getContext('2d');
-    canvas.width = croppedUVCanvas.width;
-    canvas.height = croppedUVCanvas.height;
-    
-    function redraw() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = '#111';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.drawImage(croppedUVCanvas, 0, 0);
-      // draw shapes
-      shapes.forEach(shape => {
-        const mat = materials.find(m => m.id === shape.materialId);
-        if (!mat) return;
-        ctx.fillStyle = mat.color + '99';
-        ctx.beginPath();
-        ctx.moveTo(shape.points[0].x, shape.points[0].y);
-        for(let i=1;i<shape.points.length;i++) ctx.lineTo(shape.points[i].x, shape.points[i].y);
-        ctx.closePath();
-        ctx.fill();
-        ctx.strokeStyle = mat.color;
-        ctx.lineWidth = 2;
-        ctx.stroke();
-      });
-      // current drawing points
-      if (currentPolygonPoints.length > 0) {
-        ctx.strokeStyle = '#ffaa44';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(currentPolygonPoints[0].x, currentPolygonPoints[0].y);
-        for(let i=1;i<currentPolygonPoints.length;i++) ctx.lineTo(currentPolygonPoints[i].x, currentPolygonPoints[i].y);
-        ctx.stroke();
-        for(let p of currentPolygonPoints) {
-          ctx.fillStyle = '#ffaa44';
-          ctx.beginPath();
-          ctx.arc(p.x, p.y, 4, 0, 2*Math.PI);
-          ctx.fill();
-        }
-      }
-    }
-    
-    function updateTransform() {
-      const wrap = container;
-      const scale = drawZoom;
-      const w = canvas.width * scale;
-      const h = canvas.height * scale;
-      canvas.style.width = w + 'px';
-      canvas.style.height = h + 'px';
-      canvas.style.transform = `translate(${drawPanX}px, ${drawPanY}px)`;
-      redraw();
-    }
-    
-    canvas.addEventListener('wheel', (e) => {
-      e.preventDefault();
-      const delta = e.deltaY > 0 ? 0.9 : 1.1;
-      drawZoom = Math.min(8, Math.max(0.3, drawZoom * delta));
-      updateTransform();
-    });
-    
-    let isPan = false;
-    canvas.addEventListener('mousedown', (e) => {
-      if (e.button === 1 || e.ctrlKey) {
-        isPan = true;
-        lastPanX = e.clientX;
-        lastPanY = e.clientY;
-        canvas.style.cursor = 'grabbing';
-        e.preventDefault();
-      } else {
-        // polygon drawing
-        const rect = canvas.getBoundingClientRect();
-        const sx = (e.clientX - rect.left) / rect.width;
-        const sy = (e.clientY - rect.top) / rect.height;
-        const canvasX = sx * canvas.width;
-        const canvasY = sy * canvas.height;
-        if (currentPolygonPoints.length > 2 && 
-            Math.hypot(canvasX - currentPolygonPoints[0].x, canvasY - currentPolygonPoints[0].y) < 12) {
-          // close polygon
-          if (currentPolygonPoints.length >= 3) {
-            shapes.push({
-              id: nextShapeId++,
-              materialId: activeMaterialId,
-              points: [...currentPolygonPoints]
-            });
-            currentPolygonPoints = [];
-            redraw();
-            renderMaterialsSidebar();
-            toast('Shape added');
-          }
-        } else {
-          currentPolygonPoints.push({ x: canvasX, y: canvasY });
-          redraw();
-        }
-      }
-    });
-    window.addEventListener('mousemove', (e) => {
-      if (isPan) {
-        const dx = e.clientX - lastPanX;
-        const dy = e.clientY - lastPanY;
-        drawPanX += dx;
-        drawPanY += dy;
-        lastPanX = e.clientX;
-        lastPanY = e.clientY;
-        updateTransform();
-      }
-    });
-    window.addEventListener('mouseup', () => {
-      isPan = false;
-      canvas.style.cursor = 'crosshair';
-    });
-    updateTransform();
-    return { redraw: updateTransform };
-  }
-  
-  // ---------- 3D Tune (Lazy) ----------
-  async function initThree() {
-    if (threeRenderer) return;
-    const THREE = await import('https://unpkg.com/three@0.128.0/build/three.module.js');
-    const container = document.getElementById('threeContainer');
-    if (!container) return;
-    const width = container.clientWidth;
-    const height = container.clientHeight;
-    threeRenderer = new THREE.WebGLRenderer({ antialias: true });
-    threeRenderer.setSize(width, height);
-    threeRenderer.setPixelRatio(window.devicePixelRatio);
-    container.innerHTML = '';
-    container.appendChild(threeRenderer.domElement);
-    
-    threeScene = new THREE.Scene();
-    threeScene.background = new THREE.Color(0x000000);
-    threeCamera = new THREE.PerspectiveCamera(35, width/height, 0.1, 100);
-    threeCamera.position.set(0, 0, 3);
-    const ambient = new THREE.AmbientLight(0x404040);
-    const key = new THREE.DirectionalLight(0xffffff, 1.2);
-    key.position.set(2, 2, 1);
-    threeScene.add(ambient, key);
-    const geo = new THREE.BoxGeometry(1.2, 1.2, 1.2);
-    threeMaterialObj = new THREE.MeshStandardMaterial({ roughness: 0.4, metalness: 0.0 });
-    threeMesh = new THREE.Mesh(geo, threeMaterialObj);
-    threeScene.add(threeMesh);
-    
-    let rotating = true;
-    let mouseX = 0, mouseY = 0;
-    threeRenderer.domElement.addEventListener('mousedown', (e) => { rotating = false; mouseX = e.clientX; mouseY = e.clientY; });
-    window.addEventListener('mousemove', (e) => {
-      if (!rotating && threeMesh) {
-        const dx = e.clientX - mouseX;
-        const dy = e.clientY - mouseY;
-        threeMesh.rotation.y += dx * 0.01;
-        threeMesh.rotation.x += dy * 0.01;
-        mouseX = e.clientX; mouseY = e.clientY;
-      }
-    });
-    window.addEventListener('mouseup', () => { rotating = true; });
-    function animate() {
-      if (!threeRenderer) return;
-      if (rotating && threeMesh) threeMesh.rotation.y += 0.008;
-      if (threeCamera) threeRenderer.render(threeScene, threeCamera);
-      requestAnimationFrame(animate);
-    }
-    animate();
-    threeActive = true;
-  }
-  
-  async function updateTuneMaterial(index) {
-    if (!threeMaterialObj) await initThree();
-    const mat = materials[tuneIndex];
-    if (!mat) return;
-    // generate simple placeholder albedo map if none
-    let albedoTex = null;
-    if (mat.albedoImg) {
-      const tex = new (await import('three')).CanvasTexture(mat.albedoImg);
-      tex.wrapS = tex.wrapT = 1000;
-      tex.repeat.set(mat.tileScale, mat.tileScale);
-      tex.rotation = mat.tileRot * Math.PI/180;
-      albedoTex = tex;
-    }
-    threeMaterialObj.map = albedoTex;
-    threeMaterialObj.color = albedoTex ? 0xffffff : new (await import('three')).Color(mat.color);
-    threeMaterialObj.roughness = mat.roughnessBase;
-    threeMaterialObj.metalness = mat.metallic;
-    threeMaterialObj.needsUpdate = true;
-  }
-  
-  // ---------- Composite final maps ----------
-  function compositeMaps() {
-    const size = exportRes;
-    const albedoCanvas = document.createElement('canvas'); albedoCanvas.width = size; albedoCanvas.height = size;
-    const normalCanvas = document.createElement('canvas'); normalCanvas.width = size; normalCanvas.height = size;
-    const roughCanvas = document.createElement('canvas'); roughCanvas.width = size; roughCanvas.height = size;
-    const metallicCanvas = document.createElement('canvas'); metallicCanvas.width = size; metallicCanvas.height = size;
-    const aoCanvas = document.createElement('canvas'); aoCanvas.width = size; aoCanvas.height = size;
-    const specCanvas = document.createElement('canvas'); specCanvas.width = size; specCanvas.height = size;
-    
-    const ctxAlbedo = albedoCanvas.getContext('2d');
-    const ctxNormal = normalCanvas.getContext('2d');
-    const ctxRough = roughCanvas.getContext('2d');
-    const ctxMetal = metallicCanvas.getContext('2d');
-    const ctxAO = aoCanvas.getContext('2d');
-    const ctxSpec = specCanvas.getContext('2d');
-    
-    const scaleX = size / uvWidth;
-    const scaleY = size / uvHeight;
-    
-    // helper to fill clipped region
-    function fillShape(ctx, shape, fillFn) {
-      ctx.beginPath();
-      ctx.moveTo(shape.points[0].x * scaleX, shape.points[0].y * scaleY);
-      for(let i=1;i<shape.points.length;i++) ctx.lineTo(shape.points[i].x * scaleX, shape.points[i].y * scaleY);
-      ctx.closePath();
-      ctx.save();
-      ctx.clip();
-      fillFn(ctx);
-      ctx.restore();
-    }
-    
-    // fill backgrounds black/grey
-    ctxAlbedo.fillStyle = '#000'; ctxAlbedo.fillRect(0,0,size,size);
-    ctxNormal.fillStyle = '#8080ff'; ctxNormal.fillRect(0,0,size,size);
-    ctxRough.fillStyle = '#808080'; ctxRough.fillRect(0,0,size,size);
-    ctxMetal.fillStyle = '#000000'; ctxMetal.fillRect(0,0,size,size);
-    ctxAO.fillStyle = '#ffffff'; ctxAO.fillRect(0,0,size,size);
-    ctxSpec.fillStyle = '#808080'; ctxSpec.fillRect(0,0,size,size);
-    
-    for(let shape of shapes) {
-      const mat = materials.find(m => m.id === shape.materialId);
-      if (!mat) continue;
-      // Albedo
-      if (mat.albedoImg) {
-        const patternCanvas = document.createElement('canvas');
-        const patSize = 256;
-        patternCanvas.width = patSize; patternCanvas.height = patSize;
-        const pctx = patternCanvas.getContext('2d');
-        pctx.drawImage(mat.albedoImg, 0, 0, patSize, patSize);
-        const pattern = ctxAlbedo.createPattern(patternCanvas, 'repeat');
-        fillShape(ctxAlbedo, shape, (ctx) => { ctx.fillStyle = pattern; ctx.fillRect(0,0,size,size); });
-      } else {
-        fillShape(ctxAlbedo, shape, (ctx) => { ctx.fillStyle = mat.color; ctx.fillRect(0,0,size,size); });
-      }
-      // Roughness
-      let roughnessVal = mat.roughnessBase;
-      fillShape(ctxRough, shape, (ctx) => { let v = Math.floor(roughnessVal*255); ctx.fillStyle = `rgb(${v},${v},${v})`; ctx.fillRect(0,0,size,size); });
-      // Metallic
-      let metalVal = Math.floor(mat.metallic * 255);
-      fillShape(ctxMetal, shape, (ctx) => { ctx.fillStyle = `rgb(${metalVal},${metalVal},${metalVal})`; ctx.fillRect(0,0,size,size); });
-      // Specular
-      let specVal = Math.floor(mat.specular * 255);
-      fillShape(ctxSpec, shape, (ctx) => { ctx.fillStyle = `rgb(${specVal},${specVal},${specVal})`; ctx.fillRect(0,0,size,size); });
-      // Simple normal from albedo (quick)
-      if (mat.albedoImg) {
-        const tempCanvas = document.createElement('canvas');
-        tempCanvas.width = 512; tempCanvas.height = 512;
-        const tctx = tempCanvas.getContext('2d');
-        tctx.drawImage(mat.albedoImg, 0, 0, 512,512);
-        const imgData = tctx.getImageData(0,0,512,512);
-        const data = imgData.data;
-        const normalData = new Uint8ClampedArray(512*512*4);
-        for(let y=1; y<511; y++) {
-          for(let x=1; x<511; x++) {
-            const idx = (y*512 + x)*4;
-            const l = data[idx-4]; const r = data[idx+4];
-            const t = data[idx-512*4]; const b = data[idx+512*4];
-            let dx = (r - l) / 255.0;
-            let dy = (t - b) / 255.0;
-            dx *= mat.normalStrength;
-            dy *= mat.normalStrength;
-            let dz = 1;
-            let len = Math.hypot(dx,dy,dz);
-            dx /= len; dy /= len; dz /= len;
-            normalData[idx] = (dx*0.5+0.5)*255;
-            normalData[idx+1] = (dy*0.5+0.5)*255;
-            normalData[idx+2] = (dz*0.5+0.5)*255;
-            normalData[idx+3] = 255;
-          }
-        }
-        const normalImg = new ImageData(normalData,512,512);
-        const normalCanvasSrc = document.createElement('canvas');
-        normalCanvasSrc.width = 512; normalCanvasSrc.height = 512;
-        normalCanvasSrc.getContext('2d').putImageData(normalImg,0,0);
-        const patternNorm = ctxNormal.createPattern(normalCanvasSrc, 'repeat');
-        fillShape(ctxNormal, shape, (ctx) => { ctx.fillStyle = patternNorm; ctx.fillRect(0,0,size,size); });
-      } else {
-        fillShape(ctxNormal, shape, (ctx) => { ctx.fillStyle = '#8080ff'; ctx.fillRect(0,0,size,size); });
-      }
-      // AO quick approximation
-      fillShape(ctxAO, shape, (ctx) => { ctx.fillStyle = '#ffffff'; ctx.fillRect(0,0,size,size); });
-    }
-    return { albedo: albedoCanvas, normal: normalCanvas, roughness: roughCanvas, metallic: metallicCanvas, ao: aoCanvas, specular: specCanvas };
-  }
-  
-  // ---------- UI RENDERING ----------
-  async function renderCurrentStage() {
-    const container = document.getElementById('mainStage');
-    const stage = steps[currentStep];
-    if (stage === 'quality') {
-      container.innerHTML = `<div class="stage active">
-        <h2>Output Resolution</h2><div class="quality-grid" id="qualityGrid">
-          <div class="quality-card" data-res="2048"><div>2048x2048</div><small>Hero / close-up</small></div>
-          <div class="quality-card selected" data-res="1024"><div>1024x1024</div><small>Midground</small></div>
-          <div class="quality-card" data-res="512"><div>512x512</div><small>Background</small></div>
-          <div class="quality-card" data-res="256"><div>256x256</div><small>Ultra far</small></div>
-        </div></div>`;
-      document.querySelectorAll('.quality-card').forEach(c => {
-        c.addEventListener('click', () => {
-          document.querySelectorAll('.quality-card').forEach(c2=>c2.classList.remove('selected'));
-          c.classList.add('selected');
-          exportRes = parseInt(c.dataset.res);
-          toast(`Export resolution: ${exportRes}`);
-        });
-      });
-    } 
-    else if (stage === 'upload') {
-      container.innerHTML = `<div class="stage active"><div class="dropzone" style="border:2px dashed #444;padding:40px;text-align:center;width:400px;margin:auto;"><input type="file" id="uvFileInput" accept="image/*"><div id="uvPreview"></div></div></div>`;
-      const input = document.getElementById('uvFileInput');
-      input.addEventListener('change', async (e) => {
-        const file = e.target.files[0];
-        if(!file) return;
-        const img = new Image();
-        img.src = URL.createObjectURL(file);
-        await new Promise(r => img.onload = r);
-        originalUVImage = img;
-        await applyCrop(); // default center crop
-        toast('UV uploaded, go to crop step');
-        setStep(2);
-      });
-    }
-    else if (stage === 'crop') {
-      if(!originalUVImage) { setStep(1); return; }
-      container.innerHTML = `<div class="stage active"><h3>Crop to Square</h3><canvas id="cropCanvas" style="max-width:90%;border:1px solid gray;"></canvas><br><button id="confirmCropBtn">Confirm & Continue</button></div>`;
-      const canvas = document.getElementById('cropCanvas');
-      const ctx = canvas.getContext('2d');
-      const size = Math.min(originalUVImage.width, originalUVImage.height);
-      canvas.width = size; canvas.height = size;
-      ctx.drawImage(originalUVImage, (originalUVImage.width-size)/2, (originalUVImage.height-size)/2, size, size, 0,0,size,size);
-      document.getElementById('confirmCropBtn').onclick = () => {
-        croppedUVCanvas = canvas;
-        uvWidth = size; uvHeight = size;
-        setStep(3);
-      };
-    }
-    else if (stage === 'materials') {
-      container.innerHTML = `<div class="stage active"><div id="matList"></div><button id="addMatBtn">+ Add Material</button></div>`;
-      function renderMatList() {
-        const div = document.getElementById('matList');
-        div.innerHTML = materials.map(mat => `<div style="display:flex;gap:8px;margin:8px;align-items:center;"><input type="color" value="${mat.color}" data-id="${mat.id}" class="matColor"><input value="${mat.name}" data-id="${mat.id}" class="matName"><button data-id="${mat.id}" class="delMat">✖</button></div>`).join('');
-        document.querySelectorAll('.matColor').forEach(inp => inp.addEventListener('change', (e) => { let m = materials.find(x=>x.id===e.target.dataset.id); if(m) m.color = e.target.value; }));
-        document.querySelectorAll('.matName').forEach(inp => inp.addEventListener('change', (e) => { let m = materials.find(x=>x.id===e.target.dataset.id); if(m) m.name = e.target.value; }));
-        document.querySelectorAll('.delMat').forEach(btn => btn.addEventListener('click', (e) => { if(materials.length>1) { materials = materials.filter(m=>m.id !== e.target.dataset.id); renderMatList(); } else toast('Need at least one material'); }));
-      }
-      renderMatList();
-      document.getElementById('addMatBtn').onclick = () => {
-        materials.push({ id: 'mat'+Date.now(), name: 'New', color: '#ffaa55', albedoImg: null, roughnessBase: 0.5, roughnessContrast: 1, metallic: 0, specular: 0.5, normalStrength: 2, tileScale: 1, tileRot: 0, sheen: 0, sheenEnabled: false });
-        renderMatList();
-      };
-    }
-    else if (stage === 'draw') {
-      if(!croppedUVCanvas) { setStep(2); return; }
-      container.innerHTML = `<div class="stage active"><div class="draw-layout"><div class="draw-canvas-area"><canvas id="drawCanvas"></canvas></div><div class="draw-tools"><div><strong>Active Material</strong><div id="drawMatList"></div></div><div><strong>Shapes</strong><div id="shapeList"></div></div><div><button id="clearPolygonBtn">Cancel Polygon</button></div><div class="tool-group"><button id="zoomInDraw">Zoom +</button><button id="zoomOutDraw">Zoom -</button><button id="resetViewDraw">Reset View</button></div></div></div></div>`;
-      const canvas = document.getElementById('drawCanvas');
-      const wrap = document.querySelector('.draw-canvas-area');
-      const { redraw } = initDrawCanvas(canvas, wrap);
-      function renderMatSide() {
-        const div = document.getElementById('drawMatList');
-        div.innerHTML = materials.map(m => `<div class="material-pill ${activeMaterialId === m.id ? 'active' : ''}" data-id="${m.id}"><div class="color-swatch" style="background:${m.color}"></div><span>${m.name}</span></div>`).join('');
-        document.querySelectorAll('.material-pill').forEach(el => el.addEventListener('click', () => { activeMaterialId = el.dataset.id; renderMatSide(); redraw(); }));
-      }
-      function renderShapesSide() {
-        const div = document.getElementById('shapeList');
-        div.innerHTML = shapes.map(s => { const mat = materials.find(m=>m.id===s.materialId); return `<div class="shape-item"><span>${mat?.name ?? '?'}</span><button class="delShape" data-id="${s.id}">✖</button></div>`; }).join('');
-        document.querySelectorAll('.delShape').forEach(btn => btn.addEventListener('click', (e) => { shapes = shapes.filter(s => s.id !== parseInt(e.target.dataset.id)); renderShapesSide(); redraw(); }));
-      }
-      renderMatSide(); renderShapesSide();
-      document.getElementById('clearPolygonBtn').onclick = () => { currentPolygonPoints = []; redraw(); };
-      document.getElementById('zoomInDraw').onclick = () => { drawZoom *= 1.2; redraw(); };
-      document.getElementById('zoomOutDraw').onclick = () => { drawZoom /= 1.2; redraw(); };
-      document.getElementById('resetViewDraw').onclick = () => { drawZoom = 1.0; drawPanX = 0; drawPanY = 0; redraw(); };
-    }
-    else if (stage === 'albedos') {
-      container.innerHTML = `<div class="stage active"><div class="albedo-grid" id="albedoGrid"></div></div>`;
-      const grid = document.getElementById('albedoGrid');
-      grid.innerHTML = materials.map(mat => `<div class="albedo-card"><strong>${mat.name}</strong><div class="albedo-preview" data-id="${mat.id}">${mat.albedoImg ? `<img src="${mat.albedoImg.src}">` : 'Click to upload'}</div><button class="removeAlbBtn" data-id="${mat.id}">Remove</button></div>`).join('');
-      for(let mat of materials) {
-        const preview = document.querySelector(`.albedo-preview[data-id="${mat.id}"]`);
-        if(preview) preview.addEventListener('click', () => {
-          const input = document.createElement('input'); input.type = 'file'; input.accept = 'image/*';
-          input.onchange = async (e) => {
-            const file = e.target.files[0];
-            const img = new Image();
-            img.src = URL.createObjectURL(file);
-            await new Promise(r => img.onload = r);
-            mat.albedoImg = img;
-            renderCurrentStage();
-          };
-          input.click();
-        });
-        const rmBtn = document.querySelector(`.removeAlbBtn[data-id="${mat.id}"]`);
-        if(rmBtn) rmBtn.addEventListener('click', () => { mat.albedoImg = null; renderCurrentStage(); });
-      }
-    }
-    else if (stage === 'tune') {
-      container.innerHTML = `<div class="stage active"><div class="tune-layout"><div class="tune-3d" id="threeContainer"></div><div class="tune-controls"><div><button id="prevMat">← Prev</button><button id="nextMat">Next →</button><span id="matName"></span></div><div class="slider-group"><label>Roughness Base <span id="roughVal"></span></label><input type="range" id="roughBase" min="0" max="1" step="0.01"></div><div class="slider-group"><label>Metallic</label><input type="range" id="metalSlider" min="0" max="1" step="0.01"></div><div class="slider-group"><label>Specular (IOR)</label><input type="range" id="specSlider" min="0" max="1" step="0.01"></div><div class="slider-group"><label>Normal Strength</label><input type="range" id="normStrength" min="0" max="5" step="0.1"></div><div class="slider-group"><label>Tile Scale</label><input type="range" id="tileScale" min="0.2" max="4" step="0.1"></div></div></div></div>`;
-      tuneIndex = 0;
-      await initThree();
-      const update = async () => {
-        const mat = materials[tuneIndex];
-        document.getElementById('matName').innerText = mat.name;
-        document.getElementById('roughBase').value = mat.roughnessBase;
-        document.getElementById('roughVal').innerText = mat.roughnessBase;
-        document.getElementById('metalSlider').value = mat.metallic;
-        document.getElementById('specSlider').value = mat.specular;
-        document.getElementById('normStrength').value = mat.normalStrength;
-        document.getElementById('tileScale').value = mat.tileScale;
-        await updateTuneMaterial(tuneIndex);
-      };
-      document.getElementById('roughBase').addEventListener('input', (e) => { materials[tuneIndex].roughnessBase = parseFloat(e.target.value); update(); });
-      document.getElementById('metalSlider').addEventListener('input', (e) => { materials[tuneIndex].metallic = parseFloat(e.target.value); update(); });
-      document.getElementById('specSlider').addEventListener('input', (e) => { materials[tuneIndex].specular = parseFloat(e.target.value); update(); });
-      document.getElementById('normStrength').addEventListener('input', (e) => { materials[tuneIndex].normalStrength = parseFloat(e.target.value); update(); });
-      document.getElementById('tileScale').addEventListener('input', (e) => { materials[tuneIndex].tileScale = parseFloat(e.target.value); update(); });
-      document.getElementById('prevMat').onclick = () => { tuneIndex = (tuneIndex-1+materials.length)%materials.length; update(); };
-      document.getElementById('nextMat').onclick = () => { tuneIndex = (tuneIndex+1)%materials.length; update(); };
-      update();
-    }
-    else if (stage === 'export') {
-      if(shapes.length === 0) { toast('No shapes drawn'); setStep(4); return; }
-      const maps = compositeMaps();
-      container.innerHTML = `<div class="stage active"><div class="maps-grid" id="exportGrid"></div><button id="dlAllBtn" class="primary">Download All</button></div>`;
-      const grid = document.getElementById('exportGrid');
-      const mapList = [['albedo', maps.albedo],['normal', maps.normal],['roughness', maps.roughness],['metallic', maps.metallic],['ao', maps.ao],['specular', maps.specular]];
-      mapList.forEach(([name, canvas]) => {
-        const div = document.createElement('div');
-        div.className = 'map-preview';
-        div.innerHTML = `<strong>${name.toUpperCase()}</strong><canvas width="128" height="128" style="width:100%;background:#111;"></canvas><button class="dlSingle">Download</button>`;
-        const smallCanvas = div.querySelector('canvas');
-        const ctxSmall = smallCanvas.getContext('2d');
-        ctxSmall.drawImage(canvas, 0,0,128,128);
-        div.querySelector('.dlSingle').onclick = () => { const a = document.createElement('a'); a.href = canvas.toDataURL(); a.download = `${name}.png`; a.click(); };
-        grid.appendChild(div);
-      });
-      document.getElementById('dlAllBtn').onclick = () => {
-        mapList.forEach(([name,canvas]) => { const a = document.createElement('a'); a.href = canvas.toDataURL(); a.download = `${name}.png`; a.click(); });
-        toast('Downloading all maps');
-      };
-    }
-  }
-  
-  document.getElementById('backBtn').addEventListener('click', () => setStep(currentStep-1));
-  document.getElementById('nextBtn').addEventListener('click', () => {
-    if(currentStep === 4 && shapes.length === 0) { toast('Draw at least one shape'); return; }
-    if(currentStep === 1 && !originalUVImage) { toast('Upload UV'); return; }
-    setStep(currentStep+1);
+  return inside;
+}
+
+function dist(a, b) { return Math.hypot(a[0] - b[0], a[1] - b[1]); }
+
+function loadImageFromFile(file) {
+  return new Promise((res, rej) => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = new Image();
+      img.onload = () => res(img);
+      img.onerror = rej;
+      img.src = e.target.result;
+    };
+    reader.onerror = rej;
+    reader.readAsDataURL(file);
   });
-  document.getElementById('resetBtn').addEventListener('click', () => { location.reload(); });
-  
-  renderStepper();
-  renderCurrentStage();
+}
+
+// Downscale an image/canvas to max size, returns a new canvas
+function downscale(source, maxSize = 512) {
+  const w = source.width || source.naturalWidth;
+  const h = source.height || source.naturalHeight;
+  if (w <= maxSize && h <= maxSize) {
+    // Already small, just copy to a canvas
+    const c = document.createElement('canvas');
+    c.width = w; c.height = h;
+    c.getContext('2d').drawImage(source, 0, 0);
+    return c;
+  }
+  const scale = maxSize / Math.max(w, h);
+  const c = document.createElement('canvas');
+  c.width = Math.round(w * scale);
+  c.height = Math.round(h * scale);
+  c.getContext('2d').drawImage(source, 0, 0, c.width, c.height);
+  return c;
+}
+
+// Get the preview-sized albedo for a material, caching it
+function getPreviewAlbedo(material) {
+  if (!material.albedo) return null;
+  if (!material.previewAlbedo) {
+    material.previewAlbedo = downscale(material.albedo, 512);
+  }
+  return material.previewAlbedo;
+}
+
+// =========================================================================
+// STEP NAVIGATION
+// =========================================================================
+const STEP_MESSAGES = {
+  0: 'Step 0 — Choose output quality',
+  1: 'Step 1 — Upload your UV layout',
+  2: 'Step 2 — Crop your image to a 1:1 square',
+  3: 'Step 3 — Define one material per surface type',
+  4: 'Step 4 — Draw polygon masks on the UV',
+  5: 'Step 5 — Upload an albedo per material (optional)',
+  6: 'Step 6 — Tune each material in 3D preview',
+  7: 'Step 7 — Download your PBR maps',
+};
+
+function setStep(n) {
+  if (n < 0 || n > 7) return;
+  // Validation
+  if (n >= 2 && !state.uvImageOriginal) { toast('Upload a UV first'); return; }
+  if (n >= 3 && !state.uvImage) {
+    // Apply crop if going from step 2 forward
+    if (state.step === 2) applyCrop();
+    if (!state.uvImage) { toast('Confirm crop first'); return; }
+  }
+  if (n >= 4 && state.materials.length === 0) { toast('Add at least one material'); return; }
+  if (n >= 6 && state.shapes.length === 0) { toast('Draw at least one mask shape'); return; }
+  if (n >= 7 && state.shapes.length === 0) { toast('Draw at least one mask shape'); return; }
+
+  // If leaving step 2, apply crop
+  if (state.step === 2 && n !== 2) applyCrop();
+
+  state.step = n;
+  document.querySelectorAll('.stage').forEach(s => s.classList.remove('active'));
+  document.querySelector(`.stage[data-stage="${n}"]`).classList.add('active');
+  document.querySelectorAll('.step').forEach(s => {
+    const sn = parseInt(s.dataset.step);
+    s.classList.toggle('active', sn === n);
+    s.classList.toggle('done', sn < n);
+  });
+
+  document.getElementById('prevBtn').style.visibility = n === 0 ? 'hidden' : 'visible';
+  document.getElementById('nextBtn').textContent = n === 7 ? '✓ Done' : 'Next →';
+  document.getElementById('nextBtn').style.visibility = n === 7 ? 'hidden' : 'visible';
+  document.getElementById('footerInfo').textContent = STEP_MESSAGES[n];
+
+  if (n === 2) initCropStep();
+  if (n === 3) renderMaterials();
+  if (n === 4) renderDrawStep();
+  if (n === 5) renderAlbedoStep();
+  if (n === 6) initTuneStep();
+  if (n === 7) generateFinalMaps();
+}
+
+// SINGLE source of truth for navigation
+document.querySelectorAll('.step').forEach(s => {
+  s.addEventListener('click', () => setStep(parseInt(s.dataset.step)));
+});
+document.getElementById('prevBtn').addEventListener('click', () => setStep(state.step - 1));
+document.getElementById('nextBtn').addEventListener('click', () => setStep(state.step + 1));
+
+// =========================================================================
+// STEP 0: QUALITY
+// =========================================================================
+document.querySelectorAll('.quality-card').forEach(card => {
+  card.addEventListener('click', () => {
+    document.querySelectorAll('.quality-card').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+    state.exportRes = parseInt(card.dataset.res);
+    toast(`Output: ${state.exportRes}×${state.exportRes}`);
+  });
+});
+
+// =========================================================================
+// STEP 1: UPLOAD
+// =========================================================================
+const uvFile = document.getElementById('uvFile');
+document.getElementById('browseBtn').addEventListener('click', () => uvFile.click());
+
+function setupDropzone() {
+  const drop = document.getElementById('uvDrop');
+  drop.addEventListener('click', e => {
+    // Only open file picker if we click on the dropzone itself or non-button children
+    if (e.target.tagName === 'BUTTON') return;
+    uvFile.click();
+  });
+  drop.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('dragover'); });
+  drop.addEventListener('dragleave', () => drop.classList.remove('dragover'));
+  drop.addEventListener('drop', async e => {
+    e.preventDefault(); drop.classList.remove('dragover');
+    const f = e.dataTransfer.files[0];
+    if (f) await handleUVUpload(f);
+  });
+}
+setupDropzone();
+
+uvFile.addEventListener('change', async e => {
+  const f = e.target.files[0];
+  if (f) await handleUVUpload(f);
+  uvFile.value = '';  // Allow re-uploading the same file
+});
+
+async function handleUVUpload(file) {
+  try {
+    const img = await loadImageFromFile(file);
+    state.uvImageOriginal = img;
+    state.uvImage = null;  // Force re-crop
+    toast(`UV loaded: ${img.width}×${img.height}`);
+    updateUploadUI(file.name, img);
+    setTimeout(() => setStep(2), 500);
+  } catch (e) {
+    toast('Failed to load image');
+  }
+}
+
+function updateUploadUI(fileName, img) {
+  const container = document.getElementById('uvDropContainer');
+  container.innerHTML = `
+    <div class="dropzone" id="uvDrop">
+      <img src="${img.src}" style="max-width: 70%; max-height: 60%; object-fit: contain;">
+      <div class="dropzone-title">${fileName}</div>
+      <div class="dropzone-hint">${img.width} × ${img.height}</div>
+      <div class="dropzone-actions">
+        <button class="btn" id="changeImageBtn">Change Image</button>
+        <button class="btn" id="continueBtn">Continue →</button>
+      </div>
+    </div>
+  `;
+  setupDropzone();
+  document.getElementById('changeImageBtn').addEventListener('click', e => {
+    e.stopPropagation();
+    uvFile.click();
+  });
+  document.getElementById('continueBtn').addEventListener('click', e => {
+    e.stopPropagation();
+    setStep(2);
+  });
+}
+
+// =========================================================================
+// STEP 2: CROP
+// =========================================================================
+const cropCanvas = document.getElementById('cropCanvas');
+const cropWindow = document.getElementById('cropWindow');
+const cropWrap = document.getElementById('cropCanvasWrap');
+let cropDisplayScale = 1;
+
+function initCropStep() {
+  if (!state.uvImageOriginal) return;
+  const img = state.uvImageOriginal;
+  const maxW = Math.min(window.innerWidth * 0.7, 800);
+  const maxH = Math.min(window.innerHeight * 0.6, 700);
+  const scale = Math.min(maxW / img.width, maxH / img.height, 1);
+  cropDisplayScale = scale;
+  const dispW = img.width * scale;
+  const dispH = img.height * scale;
+  cropCanvas.width = dispW;
+  cropCanvas.height = dispH;
+  cropWrap.style.width = dispW + 'px';
+  cropWrap.style.height = dispH + 'px';
+  cropCanvas.getContext('2d').drawImage(img, 0, 0, dispW, dispH);
+  const cropSize = Math.min(img.width, img.height);
+  state.crop = {
+    x: (img.width - cropSize) / 2,
+    y: (img.height - cropSize) / 2,
+    size: cropSize,
+  };
+  updateCropWindow();
+}
+
+function updateCropWindow() {
+  const s = cropDisplayScale;
+  cropWindow.style.left = (state.crop.x * s) + 'px';
+  cropWindow.style.top = (state.crop.y * s) + 'px';
+  cropWindow.style.width = (state.crop.size * s) + 'px';
+  cropWindow.style.height = (state.crop.size * s) + 'px';
+}
+
+let cropDrag = null;
+cropWindow.addEventListener('mousedown', e => {
+  if (e.target.classList.contains('crop-handle')) {
+    cropDrag = { type: 'resize', handle: e.target.dataset.handle, startX: e.clientX, startY: e.clientY, orig: {...state.crop} };
+  } else {
+    cropDrag = { type: 'move', startX: e.clientX, startY: e.clientY, orig: {...state.crop} };
+  }
+  e.preventDefault();
+});
+window.addEventListener('mousemove', e => {
+  if (!cropDrag || !state.uvImageOriginal) return;
+  const img = state.uvImageOriginal;
+  const dx = (e.clientX - cropDrag.startX) / cropDisplayScale;
+  const dy = (e.clientY - cropDrag.startY) / cropDisplayScale;
+  if (cropDrag.type === 'move') {
+    state.crop.x = Math.max(0, Math.min(img.width - state.crop.size, cropDrag.orig.x + dx));
+    state.crop.y = Math.max(0, Math.min(img.height - state.crop.size, cropDrag.orig.y + dy));
+  } else {
+    const h = cropDrag.handle;
+    let newSize = cropDrag.orig.size;
+    let newX = cropDrag.orig.x;
+    let newY = cropDrag.orig.y;
+    const dragAmount = (h === 'br') ? Math.max(dx, dy) :
+                       (h === 'tl') ? -Math.max(-dx, -dy) :
+                       (h === 'tr') ? Math.max(dx, -dy) :
+                                      Math.max(-dx, dy);
+    if (h === 'br') newSize = cropDrag.orig.size + dragAmount;
+    else if (h === 'tl') { newSize = cropDrag.orig.size - dragAmount; newX = cropDrag.orig.x + dragAmount; newY = cropDrag.orig.y + dragAmount; }
+    else if (h === 'tr') { newSize = cropDrag.orig.size + dragAmount; newY = cropDrag.orig.y - dragAmount; }
+    else { newSize = cropDrag.orig.size + dragAmount; newX = cropDrag.orig.x - dragAmount; }
+    newSize = Math.max(50, Math.min(Math.min(img.width, img.height), newSize));
+    newX = Math.max(0, Math.min(img.width - newSize, newX));
+    newY = Math.max(0, Math.min(img.height - newSize, newY));
+    state.crop.x = newX; state.crop.y = newY; state.crop.size = newSize;
+  }
+  updateCropWindow();
+});
+window.addEventListener('mouseup', () => { cropDrag = null; });
+
+document.getElementById('cropReset').addEventListener('click', initCropStep);
+document.getElementById('cropFit').addEventListener('click', () => {
+  if (!state.uvImageOriginal) return;
+  const img = state.uvImageOriginal;
+  const size = Math.min(img.width, img.height);
+  state.crop = { x: (img.width - size) / 2, y: (img.height - size) / 2, size };
+  updateCropWindow();
+});
+document.getElementById('cropChangeImage').addEventListener('click', () => {
+  uvFile.click();
+});
+
+function applyCrop() {
+  if (!state.uvImageOriginal) return;
+  const img = state.uvImageOriginal;
+  const c = state.crop;
+  const out = document.createElement('canvas');
+  out.width = c.size;
+  out.height = c.size;
+  out.getContext('2d').drawImage(img, c.x, c.y, c.size, c.size, 0, 0, c.size, c.size);
+  state.uvImage = out;
+  state.uvW = c.size;
+  state.uvH = c.size;
+}
+
+// =========================================================================
+// STEP 3: MATERIALS
+// =========================================================================
+function renderMaterials() {
+  const list = document.getElementById('materialsList');
+  list.innerHTML = '';
+  state.materials.forEach(m => {
+    const shapeCount = state.shapes.filter(s => s.materialId === m.id).length;
+    const row = document.createElement('div');
+    row.className = 'material-row';
+    row.innerHTML = `
+      <label class="swatch" style="background: ${m.color};">
+        <input type="color" value="${m.color}" data-mat-id="${m.id}" data-action="color">
+      </label>
+      <input class="material-name" value="${m.name}" data-mat-id="${m.id}" data-action="rename">
+      <span class="material-count">${shapeCount}</span>
+      <button class="material-delete" data-mat-id="${m.id}" data-action="delete">×</button>
+    `;
+    list.appendChild(row);
+  });
+}
+
+document.getElementById('addMaterial').addEventListener('click', () => {
+  const palette = ['#ff6b1a','#4ade80','#3b82f6','#a855f7','#eab308','#ec4899','#06b6d4','#f97316'];
+  const idx = state.materials.length % palette.length;
+  state.materials.push(makeMaterial(
+    state.nextMaterialId++,
+    `Material ${String.fromCharCode(65 + state.materials.length)}`,
+    palette[idx]
+  ));
+  renderMaterials();
+});
+
+document.getElementById('materialsList').addEventListener('input', e => {
+  const id = parseInt(e.target.dataset.matId);
+  const action = e.target.dataset.action;
+  const m = state.materials.find(m => m.id === id);
+  if (!m) return;
+  if (action === 'color') { m.color = e.target.value; e.target.parentElement.style.background = m.color; }
+  else if (action === 'rename') { m.name = e.target.value; }
+});
+document.getElementById('materialsList').addEventListener('click', e => {
+  if (e.target.dataset.action === 'delete') {
+    const id = parseInt(e.target.dataset.matId);
+    if (state.materials.length === 1) { toast('Need at least one material'); return; }
+    state.materials = state.materials.filter(m => m.id !== id);
+    state.shapes = state.shapes.filter(s => s.materialId !== id);
+    if (state.activeMaterialId === id) state.activeMaterialId = state.materials[0].id;
+    renderMaterials();
+  }
+});
+renderMaterials();
+
+// =========================================================================
+// STEP 4: DRAW
+// =========================================================================
+const drawCanvas = document.getElementById('drawCanvas');
+const drawZoomWrap = document.getElementById('drawZoomWrap');
+const dctx = drawCanvas.getContext('2d');
+const SNAP_DIST = 12;
+
+function renderDrawStep() {
+  if (!state.uvImage) return;
+  drawCanvas.width = state.uvW;
+  drawCanvas.height = state.uvH;
+  // Compute base display size to fit viewport
+  const maxW = Math.min(window.innerWidth * 0.55, 1000);
+  const maxH = Math.min(window.innerHeight * 0.65, 800);
+  const fitScale = Math.min(maxW / state.uvW, maxH / state.uvH, 1);
+  state.drawBaseW = state.uvW * fitScale;
+  state.drawBaseH = state.uvH * fitScale;
+  state.drawZoom = 1.0;
+  applyDrawZoom();
+  renderDrawMaterials();
+  renderShapesList();
+  redrawCanvas();
+}
+
+function applyDrawZoom() {
+  const w = state.drawBaseW * state.drawZoom;
+  const h = state.drawBaseH * state.drawZoom;
+  drawCanvas.style.width = w + 'px';
+  drawCanvas.style.height = h + 'px';
+  document.getElementById('zoomLevel').textContent = Math.round(state.drawZoom * 100) + '%';
+}
+
+document.getElementById('zoomInBtn').addEventListener('click', () => {
+  state.drawZoom = Math.min(8, state.drawZoom * 1.25);
+  applyDrawZoom();
+});
+document.getElementById('zoomOutBtn').addEventListener('click', () => {
+  state.drawZoom = Math.max(0.25, state.drawZoom / 1.25);
+  applyDrawZoom();
+});
+document.getElementById('zoomResetBtn').addEventListener('click', () => {
+  state.drawZoom = 1.0;
+  applyDrawZoom();
+});
+
+// Scroll-to-zoom on canvas (Ctrl+wheel or just wheel)
+drawZoomWrap.addEventListener('wheel', e => {
+  if (!e.ctrlKey && !e.metaKey && Math.abs(e.deltaY) < 5) return;
+  e.preventDefault();
+  const oldZoom = state.drawZoom;
+  if (e.deltaY < 0) state.drawZoom = Math.min(8, state.drawZoom * 1.15);
+  else state.drawZoom = Math.max(0.25, state.drawZoom / 1.15);
+  // Zoom toward cursor
+  const rect = drawZoomWrap.getBoundingClientRect();
+  const cx = e.clientX - rect.left;
+  const cy = e.clientY - rect.top;
+  const scrollX = drawZoomWrap.scrollLeft;
+  const scrollY = drawZoomWrap.scrollTop;
+  const ratio = state.drawZoom / oldZoom;
+  applyDrawZoom();
+  drawZoomWrap.scrollLeft = (scrollX + cx) * ratio - cx;
+  drawZoomWrap.scrollTop = (scrollY + cy) * ratio - cy;
+}, { passive: false });
+
+function renderDrawMaterials() {
+  const list = document.getElementById('drawMaterialsList');
+  list.innerHTML = '';
+  state.materials.forEach(m => {
+    const shapeCount = state.shapes.filter(s => s.materialId === m.id).length;
+    const row = document.createElement('div');
+    row.className = 'material-row' + (state.activeMaterialId === m.id ? ' active' : '');
+    row.innerHTML = `
+      <span class="swatch" style="background: ${m.color}; cursor: default;"></span>
+      <span class="material-name" style="cursor:pointer;">${m.name}</span>
+      <span class="material-count">${shapeCount}</span>
+    `;
+    row.addEventListener('click', () => {
+      state.activeMaterialId = m.id;
+      renderDrawMaterials();
+    });
+    list.appendChild(row);
+  });
+}
+
+function renderShapesList() {
+  const list = document.getElementById('shapesList');
+  document.getElementById('shapeCount').textContent = state.shapes.length;
+  list.innerHTML = '';
+  if (state.shapes.length === 0) {
+    list.innerHTML = '<div style="font-size:11px; color:var(--muted-2); padding: 8px 0;">No shapes yet.</div>';
+    return;
+  }
+  state.shapes.forEach((s, i) => {
+    const m = state.materials.find(mm => mm.id === s.materialId);
+    if (!m) return;
+    const row = document.createElement('div');
+    row.className = 'material-row';
+    row.style.cursor = 'default';
+    row.innerHTML = `
+      <span class="swatch" style="background: ${m.color}; cursor: default;"></span>
+      <span style="flex:1; font-size: 11px;">Shape ${i + 1} · ${m.name}</span>
+      <span class="material-count">${s.points.length}pt</span>
+      <button class="material-delete" data-shape-id="${s.id}">×</button>
+    `;
+    row.querySelector('.material-delete').addEventListener('click', () => {
+      state.shapes = state.shapes.filter(ss => ss.id !== s.id);
+      renderShapesList(); renderDrawMaterials(); redrawCanvas();
+    });
+    row.addEventListener('mouseenter', () => { state.hoveredShape = s.id; redrawCanvas(); });
+    row.addEventListener('mouseleave', () => { state.hoveredShape = null; redrawCanvas(); });
+    list.appendChild(row);
+  });
+}
+
+function redrawCanvas() {
+  if (!state.uvImage) return;
+  const ctx = dctx;
+  ctx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+  ctx.fillStyle = '#1a1a1a';
+  ctx.fillRect(0, 0, drawCanvas.width, drawCanvas.height);
+  ctx.globalAlpha = state.uvOpacity;
+  ctx.drawImage(state.uvImage, 0, 0, drawCanvas.width, drawCanvas.height);
+  ctx.globalAlpha = 1;
+
+  state.shapes.forEach(s => {
+    const m = state.materials.find(mm => mm.id === s.materialId);
+    if (!m || s.points.length < 2) return;
+    ctx.globalAlpha = state.maskOpacity;
+    ctx.fillStyle = m.color;
+    ctx.beginPath();
+    ctx.moveTo(s.points[0][0], s.points[0][1]);
+    for (let i = 1; i < s.points.length; i++) ctx.lineTo(s.points[i][0], s.points[i][1]);
+    ctx.closePath();
+    ctx.fill();
+    ctx.globalAlpha = 1;
+    ctx.strokeStyle = m.color;
+    ctx.lineWidth = s.id === state.hoveredShape ? 4 : 2;
+    ctx.stroke();
+  });
+
+  if (state.currentShape && state.currentShape.length > 0) {
+    const m = state.materials.find(mm => mm.id === state.activeMaterialId);
+    const color = m ? m.color : '#ff6b1a';
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(state.currentShape[0][0], state.currentShape[0][1]);
+    for (let i = 1; i < state.currentShape.length; i++) ctx.lineTo(state.currentShape[i][0], state.currentShape[i][1]);
+    ctx.stroke();
+    state.currentShape.forEach((pt, i) => {
+      ctx.beginPath();
+      const r = (i === 0) ? 8 : 4;
+      ctx.arc(pt[0], pt[1], r, 0, Math.PI * 2);
+      if (i === 0) {
+        ctx.strokeStyle = color; ctx.lineWidth = 2;
+        ctx.fillStyle = 'rgba(0,0,0,0.6)';
+        ctx.fill(); ctx.stroke();
+      } else {
+        ctx.fillStyle = color; ctx.fill();
+      }
+    });
+  }
+}
+
+function canvasCoords(e) {
+  const rect = drawCanvas.getBoundingClientRect();
+  return [
+    (e.clientX - rect.left) * (drawCanvas.width / rect.width),
+    (e.clientY - rect.top) * (drawCanvas.height / rect.height)
+  ];
+}
+
+drawCanvas.addEventListener('click', e => {
+  if (state.tool === 'polygon') {
+    const pt = canvasCoords(e);
+    if (!state.currentShape) state.currentShape = [];
+    if (state.currentShape.length >= 3) {
+      const first = state.currentShape[0];
+      const rect = drawCanvas.getBoundingClientRect();
+      const screenScale = drawCanvas.width / rect.width;
+      if (dist(pt, first) < SNAP_DIST * screenScale) {
+        finishShape(); return;
+      }
+    }
+    state.currentShape.push(pt);
+    redrawCanvas();
+  } else if (state.tool === 'erase') {
+    const pt = canvasCoords(e);
+    for (let i = state.shapes.length - 1; i >= 0; i--) {
+      if (pointInPolygon(pt, state.shapes[i].points)) {
+        state.shapes.splice(i, 1);
+        renderShapesList(); renderDrawMaterials(); redrawCanvas();
+        return;
+      }
+    }
+  }
+});
+
+drawCanvas.addEventListener('dblclick', () => {
+  if (state.currentShape && state.currentShape.length >= 3) finishShape();
+});
+
+function finishShape() {
+  if (!state.currentShape || state.currentShape.length < 3) return;
+  state.shapes.push({
+    id: state.nextShapeId++,
+    materialId: state.activeMaterialId,
+    points: state.currentShape,
+  });
+  state.currentShape = null;
+  renderShapesList(); renderDrawMaterials(); redrawCanvas();
+}
+
+document.querySelectorAll('.tool[data-tool]').forEach(t => {
+  t.addEventListener('click', () => {
+    document.querySelectorAll('.tool[data-tool]').forEach(tt => tt.classList.remove('active'));
+    t.classList.add('active');
+    state.tool = t.dataset.tool;
+    drawCanvas.style.cursor = state.tool === 'erase' ? 'not-allowed' : 'crosshair';
+    if (state.tool !== 'polygon') state.currentShape = null;
+    redrawCanvas();
+  });
+});
+
+document.getElementById('undoBtn').addEventListener('click', () => {
+  if (state.currentShape && state.currentShape.length > 0) {
+    state.currentShape.pop();
+    if (state.currentShape.length === 0) state.currentShape = null;
+    redrawCanvas();
+  } else if (state.shapes.length > 0) {
+    state.shapes.pop();
+    renderShapesList(); renderDrawMaterials(); redrawCanvas();
+  }
+});
+document.getElementById('clearShapeBtn').addEventListener('click', () => {
+  state.currentShape = null; redrawCanvas();
+});
+
+document.addEventListener('keydown', e => {
+  if (state.step !== 4) return;
+  if (e.target.tagName === 'INPUT') return;
+  if (e.key === 'Escape') { state.currentShape = null; redrawCanvas(); }
+  else if (e.key === 'z' && (e.ctrlKey || e.metaKey)) {
+    e.preventDefault();
+    document.getElementById('undoBtn').click();
+  } else if (e.key === '+' || e.key === '=') {
+    document.getElementById('zoomInBtn').click();
+  } else if (e.key === '-' || e.key === '_') {
+    document.getElementById('zoomOutBtn').click();
+  } else if (e.key === '0') {
+    document.getElementById('zoomResetBtn').click();
+  }
+});
+
+document.getElementById('uvOpacity').addEventListener('input', e => {
+  state.uvOpacity = e.target.value / 100;
+  document.getElementById('uvOpacityVal').textContent = e.target.value + '%';
+  redrawCanvas();
+});
+document.getElementById('maskOpacity').addEventListener('input', e => {
+  state.maskOpacity = e.target.value / 100;
+  document.getElementById('maskOpacityVal').textContent = e.target.value + '%';
+  redrawCanvas();
+});
+
+// =========================================================================
+// STEP 5: ALBEDOS
+// =========================================================================
+function renderAlbedoStep() {
+  const grid = document.getElementById('albedoGrid');
+  grid.innerHTML = '';
+  state.materials.forEach(m => {
+    const card = document.createElement('div');
+    card.className = 'albedo-card';
+    card.innerHTML = `
+      <div class="albedo-card-head">
+        <span class="swatch" style="background: ${m.color}; cursor:default;"></span>
+        <span class="name">${m.name}</span>
+      </div>
+      <label class="albedo-slot" data-mat-id="${m.id}">
+        ${m.albedo ? `<img src="${m.albedo.src}">` : `<span class="placeholder">Drop / Click<br>to upload</span>`}
+        <input type="file" accept="image/*" style="display:none;" data-mat-id="${m.id}">
+      </label>
+    `;
+    grid.appendChild(card);
+  });
+  grid.querySelectorAll('input[type=file]').forEach(input => {
+    input.addEventListener('change', async e => {
+      const id = parseInt(e.target.dataset.matId);
+      const f = e.target.files[0];
+      if (!f) return;
+      const img = await loadImageFromFile(f);
+      const m = state.materials.find(m => m.id === id);
+      m.albedo = img;
+      m.previewAlbedo = null;  // Invalidate cache
+      renderAlbedoStep();
+    });
+  });
+  grid.querySelectorAll('.albedo-slot').forEach(slot => {
+    slot.addEventListener('dragover', e => { e.preventDefault(); slot.classList.add('dragover'); });
+    slot.addEventListener('dragleave', () => slot.classList.remove('dragover'));
+    slot.addEventListener('drop', async e => {
+      e.preventDefault(); slot.classList.remove('dragover');
+      const id = parseInt(slot.dataset.matId);
+      const f = e.dataTransfer.files[0];
+      if (!f) return;
+      const img = await loadImageFromFile(f);
+      const m = state.materials.find(m => m.id === id);
+      m.albedo = img;
+      m.previewAlbedo = null;
+      renderAlbedoStep();
+    });
+  });
+}
+
+// =========================================================================
+// MAP GENERATION
+// =========================================================================
+function generateNormalFromImage(source, strength) {
+  if (!source) return null;
+  const w = source.width, h = source.height;
+  const src = document.createElement('canvas');
+  src.width = w; src.height = h;
+  src.getContext('2d').drawImage(source, 0, 0);
+  const data = src.getContext('2d').getImageData(0, 0, w, h).data;
+  const gray = new Float32Array(w * h);
+  for (let i = 0; i < w * h; i++) {
+    gray[i] = (data[i*4] * 0.299 + data[i*4+1] * 0.587 + data[i*4+2] * 0.114) / 255;
+  }
+  const out = document.createElement('canvas');
+  out.width = w; out.height = h;
+  const octx = out.getContext('2d');
+  const outData = octx.createImageData(w, h);
+  const gAt = (x, y) => {
+    x = Math.max(0, Math.min(w - 1, x));
+    y = Math.max(0, Math.min(h - 1, y));
+    return gray[y * w + x];
+  };
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      const tl = gAt(x-1,y-1), t = gAt(x,y-1), tr = gAt(x+1,y-1);
+      const l = gAt(x-1,y),                       r = gAt(x+1,y);
+      const bl = gAt(x-1,y+1), b = gAt(x,y+1), br = gAt(x+1,y+1);
+      const dX = (tr + 2*r + br) - (tl + 2*l + bl);
+      const dY = (bl + 2*b + br) - (tl + 2*t + tr);
+      let nx = -dX * strength;
+      let ny = dY * strength;  // OpenGL Y+ (Blender default)
+      let nz = 1;
+      const len = Math.sqrt(nx*nx + ny*ny + nz*nz);
+      nx /= len; ny /= len; nz /= len;
+      const i = (y * w + x) * 4;
+      outData.data[i]   = Math.round((nx * 0.5 + 0.5) * 255);
+      outData.data[i+1] = Math.round((ny * 0.5 + 0.5) * 255);
+      outData.data[i+2] = Math.round((nz * 0.5 + 0.5) * 255);
+      outData.data[i+3] = 255;
+    }
+  }
+  octx.putImageData(outData, 0, 0);
+  return out;
+}
+
+function generateRoughnessFromImage(source, base, contrast, invert) {
+  if (!source) {
+    const out = document.createElement('canvas');
+    out.width = 256; out.height = 256;
+    const v = Math.round(base * 255);
+    out.getContext('2d').fillStyle = `rgb(${v},${v},${v})`;
+    out.getContext('2d').fillRect(0, 0, 256, 256);
+    return out;
+  }
+  const w = source.width, h = source.height;
+  const src = document.createElement('canvas');
+  src.width = w; src.height = h;
+  src.getContext('2d').drawImage(source, 0, 0);
+  const data = src.getContext('2d').getImageData(0, 0, w, h).data;
+  const out = document.createElement('canvas');
+  out.width = w; out.height = h;
+  const octx = out.getContext('2d');
+  const outData = octx.createImageData(w, h);
+  for (let i = 0; i < w * h; i++) {
+    const lum = (data[i*4] * 0.299 + data[i*4+1] * 0.587 + data[i*4+2] * 0.114) / 255;
+    let v = lum;
+    if (invert) v = 1 - v;
+    v = (v - 0.5) * contrast + 0.5;
+    v = base + (v - 0.5) * 0.5;
+    v = Math.max(0, Math.min(1, v));
+    const b = Math.round(v * 255);
+    outData.data[i*4] = b; outData.data[i*4+1] = b; outData.data[i*4+2] = b; outData.data[i*4+3] = 255;
+  }
+  octx.putImageData(outData, 0, 0);
+  return out;
+}
+
+function generateAOFromImage(source) {
+  if (!source) {
+    const out = document.createElement('canvas');
+    out.width = 256; out.height = 256;
+    out.getContext('2d').fillStyle = '#ffffff';
+    out.getContext('2d').fillRect(0, 0, 256, 256);
+    return out;
+  }
+  const w = source.width, h = source.height;
+  const src = document.createElement('canvas');
+  src.width = w; src.height = h;
+  src.getContext('2d').drawImage(source, 0, 0);
+  const data = src.getContext('2d').getImageData(0, 0, w, h).data;
+  const gray = new Float32Array(w * h);
+  for (let i = 0; i < w * h; i++) {
+    gray[i] = (data[i*4] * 0.299 + data[i*4+1] * 0.587 + data[i*4+2] * 0.114) / 255;
+  }
+  // Separable box blur for speed (much faster than 2D)
+  const tmp = new Float32Array(w * h);
+  const blurred = new Float32Array(w * h);
+  const R = 3;
+  // Horizontal
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      let sum = 0, cnt = 0;
+      for (let xx = -R; xx <= R; xx++) {
+        const xi = Math.max(0, Math.min(w-1, x+xx));
+        sum += gray[y * w + xi]; cnt++;
+      }
+      tmp[y * w + x] = sum / cnt;
+    }
+  }
+  // Vertical
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      let sum = 0, cnt = 0;
+      for (let yy = -R; yy <= R; yy++) {
+        const yi = Math.max(0, Math.min(h-1, y+yy));
+        sum += tmp[yi * w + x]; cnt++;
+      }
+      blurred[y * w + x] = sum / cnt;
+    }
+  }
+  const out = document.createElement('canvas');
+  out.width = w; out.height = h;
+  const octx = out.getContext('2d');
+  const outData = octx.createImageData(w, h);
+  for (let i = 0; i < w * h; i++) {
+    let ao = gray[i] / Math.max(0.05, blurred[i]);
+    ao = Math.max(0, Math.min(1, ao * 0.7 + 0.3));
+    const b = Math.round(ao * 255);
+    outData.data[i*4] = b; outData.data[i*4+1] = b; outData.data[i*4+2] = b; outData.data[i*4+3] = 255;
+  }
+  octx.putImageData(outData, 0, 0);
+  return out;
+}
+
+// =========================================================================
+// STEP 6: TUNE (3D Preview with optimized updates)
+// =========================================================================
+let threeScene, threeCamera, threeRenderer, threeMesh, threeMaterial;
+const threeMaps = {};  // { materialId: { albedoTex, normalTex, roughnessTex, aoTex } }
+const threeCanvases = {};  // { materialId: { albedoCanvas, normalCanvas, roughnessCanvas, aoCanvas } }
+let threeRotation = { x: 0.4, y: 0.6 };
+let threeZoom = 3;
+let threeDrag = null;
+let threeAnimating = true;
+let threeAnimFrame = null;
+
+function initThreeScene() {
+  const canvas = document.getElementById('previewCanvas');
+  if (threeRenderer) {
+    threeRenderer.dispose();
+    threeRenderer = null;
+  }
+  threeRenderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
+  const rect = canvas.parentElement.getBoundingClientRect();
+  threeRenderer.setSize(rect.width, rect.height, false);
+  threeRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  threeRenderer.outputColorSpace = THREE.SRGBColorSpace;
+
+  threeScene = new THREE.Scene();
+  threeScene.background = new THREE.Color(0x000000);
+
+  threeCamera = new THREE.PerspectiveCamera(35, rect.width / rect.height, 0.1, 100);
+  threeCamera.position.set(0, 0, threeZoom);
+
+  const key = new THREE.DirectionalLight(0xffffff, 2.0);
+  key.position.set(2, 2, 2);
+  threeScene.add(key);
+  const fill = new THREE.DirectionalLight(0xffffff, 0.4);
+  fill.position.set(-2, -1, 2);
+  threeScene.add(fill);
+  threeScene.add(new THREE.AmbientLight(0xffffff, 0.15));
+
+  const geo = new THREE.BoxGeometry(1, 1, 1);
+  threeMaterial = new THREE.MeshPhysicalMaterial({
+    color: 0x888888, roughness: 0.5, metalness: 0.0,
+  });
+  threeMesh = new THREE.Mesh(geo, threeMaterial);
+  threeScene.add(threeMesh);
+
+  if (threeAnimFrame) cancelAnimationFrame(threeAnimFrame);
+  animateThree();
+}
+
+function bindPreviewInteraction() {
+  const canvas = document.getElementById('previewCanvas');
+  // Remove old listeners by cloning
+  const newCanvas = canvas.cloneNode(true);
+  canvas.parentNode.replaceChild(newCanvas, canvas);
+
+  newCanvas.addEventListener('mousedown', e => {
+    threeDrag = { x: e.clientX, y: e.clientY, rx: threeRotation.x, ry: threeRotation.y };
+    threeAnimating = false;
+    e.preventDefault();
+  });
+  window.addEventListener('mousemove', e => {
+    if (!threeDrag) return;
+    const dx = (e.clientX - threeDrag.x) * 0.01;
+    const dy = (e.clientY - threeDrag.y) * 0.01;
+    threeRotation.y = threeDrag.ry + dx;
+    threeRotation.x = threeDrag.rx + dy;
+  });
+  window.addEventListener('mouseup', () => { threeDrag = null; });
+  newCanvas.addEventListener('wheel', e => {
+    e.preventDefault();
+    threeZoom = Math.max(1.5, Math.min(8, threeZoom + e.deltaY * 0.002));
+  }, { passive: false });
+  newCanvas.addEventListener('dblclick', () => {
+    threeRotation = { x: 0.4, y: 0.6 };
+    threeZoom = 3;
+    threeAnimating = true;
+  });
+}
+
+function animateThree() {
+  if (!threeRenderer || state.step !== 6) {
+    threeAnimFrame = null;
+    return;
+  }
+  if (threeAnimating && !threeDrag) {
+    threeRotation.y += 0.005;
+  }
+  threeMesh.rotation.x = threeRotation.x;
+  threeMesh.rotation.y = threeRotation.y;
+  threeCamera.position.z = threeZoom;
+  threeRenderer.render(threeScene, threeCamera);
+  threeAnimFrame = requestAnimationFrame(animateThree);
+}
+
+function getCurrentMaterial() { return state.materials[state.tuneIndex]; }
+
+async function initTuneStep() {
+  initThreeScene();
+  // Re-bind interaction because we re-grab the canvas in initThreeScene
+  bindPreviewInteraction();
+  state.tuneIndex = 0;
+  state.tuneView = 'rendered';
+  // Clear stale caches
+  for (const k in threeCanvases) delete threeCanvases[k];
+  for (const k in threeMaps) delete threeMaps[k];
+  updateTuneUI();
+  await rebuildMaterialMaps('all');
+  applyMaterialToPreview('all');
+}
+
+function updateTuneUI() {
+  const m = getCurrentMaterial();
+  if (!m) return;
+  document.getElementById('tuneMatSwatch').style.background = m.color;
+  document.getElementById('tuneMatName').textContent = m.name;
+  document.getElementById('tuneMatCounter').textContent = `${state.tuneIndex + 1} / ${state.materials.length}`;
+  document.getElementById('tuneNormalStrength').value = m.normalStrength;
+  document.getElementById('tuneNormalStrengthVal').textContent = m.normalStrength.toFixed(1);
+  document.getElementById('tuneRoughnessBase').value = m.roughnessBase;
+  document.getElementById('tuneRoughnessBaseVal').textContent = m.roughnessBase.toFixed(2);
+  document.getElementById('tuneRoughnessContrast').value = m.roughnessContrast;
+  document.getElementById('tuneRoughnessContrastVal').textContent = m.roughnessContrast.toFixed(2);
+  document.getElementById('tuneRoughnessInvert').checked = m.roughnessInvert;
+  document.getElementById('tuneMetallic').value = m.metallic;
+  document.getElementById('tuneMetallicVal').textContent = m.metallic.toFixed(2);
+  document.getElementById('tuneSpecular').value = m.specular;
+  document.getElementById('tuneSpecularVal').textContent = m.specular.toFixed(2);
+  document.getElementById('tuneTileScale').value = m.tileScale;
+  document.getElementById('tuneTileScaleVal').textContent = m.tileScale.toFixed(1) + '×';
+  document.getElementById('tuneTileRot').value = m.tileRot;
+  document.getElementById('tuneTileRotVal').textContent = m.tileRot + '°';
+  document.getElementById('tuneSheenEnabled').checked = m.sheenEnabled;
+  document.getElementById('tuneSheen').disabled = !m.sheenEnabled;
+  document.getElementById('tuneSheen').value = m.sheen;
+  document.getElementById('tuneSheenVal').textContent = m.sheen.toFixed(2);
+}
+
+document.getElementById('tunePrev').addEventListener('click', async () => {
+  state.tuneIndex = (state.tuneIndex - 1 + state.materials.length) % state.materials.length;
+  updateTuneUI();
+  await rebuildMaterialMaps('all');
+  applyMaterialToPreview('all');
+});
+document.getElementById('tuneNext').addEventListener('click', async () => {
+  state.tuneIndex = (state.tuneIndex + 1) % state.materials.length;
+  updateTuneUI();
+  await rebuildMaterialMaps('all');
+  applyMaterialToPreview('all');
+});
+
+// ---- THE PERFORMANCE FIX ----
+// Selectively regenerate ONLY what changed; debounce expensive ops.
+// 'target' can be: 'all', 'normal', 'roughness', 'ao', or null (no map regen, just apply)
+async function rebuildMaterialMaps(target) {
+  const m = getCurrentMaterial();
+  if (!m) return;
+  threeCanvases[m.id] = threeCanvases[m.id] || {};
+  const cache = threeCanvases[m.id];
+  const source = m.albedo ? getPreviewAlbedo(m) : null;
+
+  if (target === 'all') {
+    cache.albedoCanvas = m.albedo || null;
+    cache.normalCanvas = generateNormalFromImage(source, m.normalStrength);
+    cache.roughnessCanvas = generateRoughnessFromImage(source, m.roughnessBase, m.roughnessContrast, m.roughnessInvert);
+    cache.aoCanvas = generateAOFromImage(source);
+  } else if (target === 'normal') {
+    cache.normalCanvas = generateNormalFromImage(source, m.normalStrength);
+  } else if (target === 'roughness') {
+    cache.roughnessCanvas = generateRoughnessFromImage(source, m.roughnessBase, m.roughnessContrast, m.roughnessInvert);
+  } else if (target === 'ao') {
+    cache.aoCanvas = generateAOFromImage(source);
+  }
+}
+
+// Create or update three.js texture from a canvas
+function makeTexFromCanvas(canvas, isLinear = false) {
+  if (!canvas) return null;
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.wrapS = THREE.RepeatWrapping;
+  tex.wrapT = THREE.RepeatWrapping;
+  tex.colorSpace = isLinear ? THREE.NoColorSpace : THREE.SRGBColorSpace;
+  return tex;
+}
+
+// Apply textures + scalars to the three.js material.
+// `level` controls what gets rebuilt:
+//   'all': dispose old textures, build fresh from canvas cache, set all scalars
+//   'normal'/'roughness'/'ao': swap that texture only
+//   'tiles': only update repeat/rotation on existing textures
+//   'scalars': only update metalness/ior/sheen
+function applyMaterialToPreview(level = 'all') {
+  const m = getCurrentMaterial();
+  if (!m || !threeMaterial) return;
+  const cache = threeCanvases[m.id] || {};
+  const view = state.tuneView;
+
+  if (level === 'tiles') {
+    // Fast: just update texture repeat/rotation
+    [threeMaterial.map, threeMaterial.normalMap, threeMaterial.roughnessMap, threeMaterial.aoMap].forEach(tex => {
+      if (!tex) return;
+      tex.repeat.set(m.tileScale, m.tileScale);
+      tex.rotation = m.tileRot * Math.PI / 180;
+      tex.center.set(0.5, 0.5);
+      tex.needsUpdate = true;
+    });
+    return;
+  }
+
+  if (level === 'scalars') {
+    // Fast: just update material scalars
+    threeMaterial.metalness = m.metallic;
+    threeMaterial.ior = 1.0 + m.specular * 0.8;
+    threeMaterial.sheen = m.sheenEnabled ? m.sheen : 0;
+    if (m.sheenEnabled) {
+      threeMaterial.sheenColor = new THREE.Color(0xffffff);
+      threeMaterial.sheenRoughness = 0.5;
+    }
+    threeMaterial.needsUpdate = true;
+    return;
+  }
+
+  // For 'normal', 'roughness', 'ao': replace only that texture in the cache
+  if (level === 'normal' || level === 'roughness' || level === 'ao') {
+    // We still need to re-apply because the rendered view shows all maps
+    // Just swap the relevant texture
+    const mapName = level === 'normal' ? 'normalMap' : level === 'roughness' ? 'roughnessMap' : 'aoMap';
+    const canvasKey = level === 'normal' ? 'normalCanvas' : level === 'roughness' ? 'roughnessCanvas' : 'aoCanvas';
+    if (threeMaterial[mapName]) threeMaterial[mapName].dispose();
+    if (view === 'rendered' || view === level) {
+      threeMaterial[mapName] = makeTexFromCanvas(cache[canvasKey], true);
+      if (threeMaterial[mapName]) {
+        threeMaterial[mapName].repeat.set(m.tileScale, m.tileScale);
+        threeMaterial[mapName].rotation = m.tileRot * Math.PI / 180;
+        threeMaterial[mapName].center.set(0.5, 0.5);
+      }
+    }
+    threeMaterial.needsUpdate = true;
+    return;
+  }
+
+  // level === 'all': full rebuild
+  // Dispose existing textures to free GPU memory
+  ['map', 'normalMap', 'roughnessMap', 'metalnessMap', 'aoMap'].forEach(k => {
+    if (threeMaterial[k]) { threeMaterial[k].dispose(); threeMaterial[k] = null; }
+  });
+  threeMaterial.color = new THREE.Color(0x888888);
+
+  const albedoTex = cache.albedoCanvas ? makeTexFromCanvas(cache.albedoCanvas, false) : null;
+  const normalTex = cache.normalCanvas ? makeTexFromCanvas(cache.normalCanvas, true) : null;
+  const roughTex  = cache.roughnessCanvas ? makeTexFromCanvas(cache.roughnessCanvas, true) : null;
+  const aoTex     = cache.aoCanvas ? makeTexFromCanvas(cache.aoCanvas, true) : null;
+  [albedoTex, normalTex, roughTex, aoTex].forEach(t => {
+    if (!t) return;
+    t.repeat.set(m.tileScale, m.tileScale);
+    t.rotation = m.tileRot * Math.PI / 180;
+    t.center.set(0.5, 0.5);
+  });
+
+  if (view === 'rendered') {
+    if (cache.albedoCanvas) {
+      threeMaterial.map = albedoTex;
+      threeMaterial.normalMap = normalTex;
+      threeMaterial.roughnessMap = roughTex;
+      threeMaterial.color = new THREE.Color(0xffffff);
+    } else {
+      threeMaterial.color = new THREE.Color(m.color);
+    }
+    threeMaterial.roughness = m.roughnessBase;
+    threeMaterial.metalness = m.metallic;
+    threeMaterial.ior = 1.0 + m.specular * 0.8;
+    if (m.sheenEnabled) {
+      threeMaterial.sheen = m.sheen;
+      threeMaterial.sheenColor = new THREE.Color(0xffffff);
+      threeMaterial.sheenRoughness = 0.5;
+    } else {
+      threeMaterial.sheen = 0;
+    }
+  } else if (view === 'albedo') {
+    threeMaterial.map = albedoTex;
+    threeMaterial.color = albedoTex ? new THREE.Color(0xffffff) : new THREE.Color(m.color);
+    threeMaterial.roughness = 1; threeMaterial.metalness = 0;
+  } else if (view === 'normal') {
+    threeMaterial.map = normalTex || albedoTex;  // show normal as flat texture
+    threeMaterial.color = new THREE.Color(0xffffff);
+    threeMaterial.roughness = 1; threeMaterial.metalness = 0;
+  } else if (view === 'roughness') {
+    threeMaterial.map = roughTex;
+    threeMaterial.color = new THREE.Color(0xffffff);
+    threeMaterial.roughness = 1; threeMaterial.metalness = 0;
+  } else if (view === 'metallic') {
+    threeMaterial.color = new THREE.Color(m.metallic, m.metallic, m.metallic);
+    threeMaterial.roughness = 1; threeMaterial.metalness = 0;
+  }
+  threeMaterial.needsUpdate = true;
+}
+
+// Debounce helper for expensive map regenerations
+function debounce(fn, delay) {
+  let timer = null;
+  return (...args) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn(...args), delay);
+  };
+}
+
+const debouncedRegen = {
+  normal: debounce(async () => {
+    await rebuildMaterialMaps('normal');
+    applyMaterialToPreview('normal');
+  }, 200),
+  roughness: debounce(async () => {
+    await rebuildMaterialMaps('roughness');
+    applyMaterialToPreview('roughness');
+  }, 200),
+};
+
+// ---- Slider binders with the right update strategy per slider ----
+// Type:
+//   'regenNormal' = regenerate normal map (debounced)
+//   'regenRough' = regenerate roughness map (debounced)
+//   'scalar' = only update three.js material scalar (instant)
+//   'tiles' = only update texture transforms (instant)
+function bindTuneSlider(id, valId, prop, format, type) {
+  const el = document.getElementById(id);
+  const valEl = document.getElementById(valId);
+  el.addEventListener('input', () => {
+    const m = getCurrentMaterial();
+    if (!m) return;
+    const v = parseFloat(el.value);
+    m[prop] = v;
+    valEl.textContent = format(v);
+    if (type === 'regenNormal') {
+      debouncedRegen.normal();
+    } else if (type === 'regenRough') {
+      debouncedRegen.roughness();
+    } else if (type === 'scalar') {
+      // Update base roughness directly on three.js scalar for instant feedback
+      if (prop === 'roughnessBase' && state.tuneView === 'rendered') {
+        threeMaterial.roughness = v;
+      }
+      applyMaterialToPreview('scalars');
+    } else if (type === 'tiles') {
+      applyMaterialToPreview('tiles');
+    }
+  });
+}
+
+// Critical perf decision: 'roughnessBase' is the three.js scalar (instant),
+// 'roughnessContrast' and 'roughnessInvert' affect the GENERATED map (debounced).
+bindTuneSlider('tuneNormalStrength', 'tuneNormalStrengthVal', 'normalStrength', v => v.toFixed(1), 'regenNormal');
+bindTuneSlider('tuneRoughnessBase', 'tuneRoughnessBaseVal', 'roughnessBase', v => v.toFixed(2), 'scalar');
+bindTuneSlider('tuneRoughnessContrast', 'tuneRoughnessContrastVal', 'roughnessContrast', v => v.toFixed(2), 'regenRough');
+bindTuneSlider('tuneMetallic', 'tuneMetallicVal', 'metallic', v => v.toFixed(2), 'scalar');
+bindTuneSlider('tuneSpecular', 'tuneSpecularVal', 'specular', v => v.toFixed(2), 'scalar');
+bindTuneSlider('tuneTileScale', 'tuneTileScaleVal', 'tileScale', v => v.toFixed(1) + '×', 'tiles');
+bindTuneSlider('tuneTileRot', 'tuneTileRotVal', 'tileRot', v => Math.round(v) + '°', 'tiles');
+bindTuneSlider('tuneSheen', 'tuneSheenVal', 'sheen', v => v.toFixed(2), 'scalar');
+
+document.getElementById('tuneRoughnessInvert').addEventListener('change', e => {
+  const m = getCurrentMaterial();
+  if (m) {
+    m.roughnessInvert = e.target.checked;
+    debouncedRegen.roughness();
+  }
+});
+document.getElementById('tuneSheenEnabled').addEventListener('change', e => {
+  const m = getCurrentMaterial();
+  if (m) {
+    m.sheenEnabled = e.target.checked;
+    document.getElementById('tuneSheen').disabled = !m.sheenEnabled;
+    applyMaterialToPreview('scalars');
+  }
+});
+
+document.getElementById('advancedToggle').addEventListener('click', () => {
+  document.getElementById('advancedSection').classList.toggle('collapsed');
+});
+
+// Tab switching — needs full rebuild because view changes which texture maps to material.map
+document.querySelectorAll('.preview-tab').forEach(t => {
+  t.addEventListener('click', () => {
+    document.querySelectorAll('.preview-tab').forEach(tt => tt.classList.remove('active'));
+    t.classList.add('active');
+    state.tuneView = t.dataset.view;
+    applyMaterialToPreview('all');
+  });
+});
+
+// =========================================================================
+// STEP 7: FINAL EXPORT (full resolution)
+// =========================================================================
+async function generateFinalMaps() {
+  busy(true);
+  await new Promise(r => setTimeout(r, 50));  // Let UI update
+
+  const size = state.exportRes;
+  document.getElementById('exportSize').textContent = size + ' × ' + size;
+  const sx = size / state.uvW;
+  const sy = size / state.uvH;
+
+  // Generate full-res maps per material
+  const matMaps = {};
+  for (const m of state.materials) {
+    matMaps[m.id] = {
+      normal: m.albedo ? generateNormalFromImage(m.albedo, m.normalStrength) : null,
+      roughness: generateRoughnessFromImage(m.albedo, m.roughnessBase, m.roughnessContrast, m.roughnessInvert),
+      ao: m.albedo ? generateAOFromImage(m.albedo) : null,
+    };
+    // Yield to UI
+    await new Promise(r => setTimeout(r, 0));
+  }
+
+  const albedo = compositeMap(size, sx, sy, (ctx, s, m) => {
+    if (m.albedo) {
+      const pat = createTransformedPattern(ctx, m.albedo, m.tileScale, m.tileRot);
+      ctx.fillStyle = pat;
+    } else {
+      ctx.fillStyle = m.color;
+    }
+    ctx.fillRect(0, 0, size, size);
+  }, '#000000');
+
+  const normal = compositeMap(size, sx, sy, (ctx, s, m) => {
+    const n = matMaps[m.id].normal;
+    if (n) {
+      const pat = createTransformedPattern(ctx, n, m.tileScale, m.tileRot);
+      ctx.fillStyle = pat;
+      ctx.fillRect(0, 0, size, size);
+    } else {
+      ctx.fillStyle = 'rgb(128,128,255)';
+      ctx.fillRect(0, 0, size, size);
+    }
+  }, 'rgb(128,128,255)');
+
+  const roughness = compositeMap(size, sx, sy, (ctx, s, m) => {
+    const r = matMaps[m.id].roughness;
+    const pat = createTransformedPattern(ctx, r, m.tileScale, m.tileRot);
+    ctx.fillStyle = pat;
+    ctx.fillRect(0, 0, size, size);
+  }, 'rgb(128,128,128)');
+
+  const metallic = compositeMap(size, sx, sy, (ctx, s, m) => {
+    const v = Math.round(m.metallic * 255);
+    ctx.fillStyle = `rgb(${v},${v},${v})`;
+    ctx.fillRect(0, 0, size, size);
+  }, '#000000');
+
+  const ao = compositeMap(size, sx, sy, (ctx, s, m) => {
+    const a = matMaps[m.id].ao;
+    if (a) {
+      const pat = createTransformedPattern(ctx, a, m.tileScale, m.tileRot);
+      ctx.fillStyle = pat;
+      ctx.fillRect(0, 0, size, size);
+    } else {
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, size, size);
+    }
+  }, '#ffffff');
+
+  const specular = compositeMap(size, sx, sy, (ctx, s, m) => {
+    const v = Math.round(m.specular * 255);
+    ctx.fillStyle = `rgb(${v},${v},${v})`;
+    ctx.fillRect(0, 0, size, size);
+  }, '#808080');
+
+  state.outputAlbedo = albedo;
+  state.outputNormal = normal;
+  state.outputRoughness = roughness;
+  state.outputMetallic = metallic;
+  state.outputAO = ao;
+  state.outputSpecular = specular;
+
+  const grid = document.getElementById('mapsGrid');
+  grid.innerHTML = '';
+  const maps = [
+    { label: 'ALBEDO', canvas: albedo, filename: 'albedo.png' },
+    { label: 'NORMAL', canvas: normal, filename: 'normal.png' },
+    { label: 'ROUGHNESS', canvas: roughness, filename: 'roughness.png' },
+    { label: 'METALLIC', canvas: metallic, filename: 'metallic.png' },
+    { label: 'AO', canvas: ao, filename: 'ao.png' },
+    { label: 'SPECULAR', canvas: specular, filename: 'specular.png' },
+  ];
+  maps.forEach(m => {
+    const card = document.createElement('div');
+    card.className = 'map-card';
+    card.innerHTML = `
+      <div class="map-card-head">
+        <span class="label">${m.label}</span>
+        <button class="btn">↓ Download</button>
+      </div>
+    `;
+    card.appendChild(m.canvas);
+    card.querySelector('button').addEventListener('click', () => downloadCanvas(m.canvas, m.filename));
+    grid.appendChild(card);
+  });
+
+  busy(false);
+}
+
+function compositeMap(size, sx, sy, perShapeFn, bgFillStyle) {
+  const c = document.createElement('canvas');
+  c.width = size; c.height = size;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = bgFillStyle;
+  ctx.fillRect(0, 0, size, size);
+  state.shapes.forEach(s => {
+    const m = state.materials.find(mm => mm.id === s.materialId);
+    if (!m) return;
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(s.points[0][0] * sx, s.points[0][1] * sy);
+    for (let i = 1; i < s.points.length; i++) ctx.lineTo(s.points[i][0] * sx, s.points[i][1] * sy);
+    ctx.closePath();
+    ctx.clip();
+    perShapeFn(ctx, s, m);
+    ctx.restore();
+  });
+  return c;
+}
+
+function createTransformedPattern(targetCtx, sourceCanvas, scale, rotDeg) {
+  const tile = document.createElement('canvas');
+  const tileSize = Math.max(64, Math.min(2048, Math.round(sourceCanvas.width * scale)));
+  tile.width = tileSize; tile.height = tileSize;
+  const tctx = tile.getContext('2d');
+  if (rotDeg !== 0) {
+    tctx.save();
+    tctx.translate(tileSize / 2, tileSize / 2);
+    tctx.rotate(rotDeg * Math.PI / 180);
+    const draw = tileSize * 1.5;
+    tctx.drawImage(sourceCanvas, -draw/2, -draw/2, draw, draw);
+    tctx.restore();
+  } else {
+    tctx.drawImage(sourceCanvas, 0, 0, tileSize, tileSize);
+  }
+  return targetCtx.createPattern(tile, 'repeat');
+}
+
+function downloadCanvas(canvas, filename) {
+  canvas.toBlob(blob => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }, 'image/png');
+}
+
+document.getElementById('downloadAll').addEventListener('click', () => {
+  const maps = [
+    { c: state.outputAlbedo, n: 'albedo.png' },
+    { c: state.outputNormal, n: 'normal.png' },
+    { c: state.outputRoughness, n: 'roughness.png' },
+    { c: state.outputMetallic, n: 'metallic.png' },
+    { c: state.outputAO, n: 'ao.png' },
+    { c: state.outputSpecular, n: 'specular.png' },
+  ];
+  maps.forEach((m, i) => setTimeout(() => downloadCanvas(m.c, m.n), i * 250));
+  toast('Downloading 6 maps…');
+});
+
+// =========================================================================
+// RESET
+// =========================================================================
+document.getElementById('resetAll').addEventListener('click', () => {
+  if (!confirm('Reset everything?')) return;
+  location.reload();
+});
+
 </script>
 </body>
 </html>
