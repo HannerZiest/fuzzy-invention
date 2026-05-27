@@ -35,10 +35,8 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { height: 100%; }
   body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--mono);
-    font-size: 13px;
+    background: var(--bg); color: var(--text);
+    font-family: var(--mono); font-size: 13px;
     overflow: hidden;
     background-image:
       radial-gradient(circle at 0% 0%, rgba(255, 107, 26, 0.04), transparent 40%),
@@ -46,36 +44,36 @@
   }
   .app { display: flex; flex-direction: column; height: 100vh; }
 
-  /* HEADER */
   header {
-    height: 48px;
-    background: var(--panel);
+    height: 48px; background: var(--panel);
     border-bottom: 1px solid var(--border);
     display: flex; align-items: center; padding: 0 16px;
-    gap: 16px;
-    flex-shrink: 0;
+    gap: 16px; flex-shrink: 0;
   }
   .logo {
     font-weight: 700; letter-spacing: 0.04em;
     color: var(--accent);
     text-transform: uppercase; font-size: 13px;
     display: flex; align-items: center; gap: 8px;
+    flex-shrink: 0;
   }
   .logo::before {
     content: ''; width: 10px; height: 10px;
     background: var(--accent);
     box-shadow: 0 0 12px var(--accent);
   }
-  .stepper { display: flex; align-items: center; gap: 4px; flex: 1; justify-content: center; overflow-x: auto; }
+  .stepper {
+    display: flex; align-items: center; gap: 4px;
+    flex: 1; justify-content: center; overflow-x: auto;
+    min-width: 0;
+  }
   .step {
     display: flex; align-items: center; gap: 6px;
-    padding: 6px 10px;
-    color: var(--muted-2);
-    font-size: 10px;
+    padding: 6px 8px;
+    color: var(--muted-2); font-size: 10px;
     text-transform: uppercase; letter-spacing: 0.08em;
-    cursor: pointer;
-    transition: color 0.15s;
-    white-space: nowrap;
+    cursor: pointer; transition: color 0.15s;
+    white-space: nowrap; flex-shrink: 0;
   }
   .step .num {
     width: 18px; height: 18px;
@@ -88,30 +86,28 @@
   .step.done { color: var(--text); }
   .step.done .num { border-color: var(--success); color: var(--success); }
   .step:hover { color: var(--text); }
-  .step-divider { width: 12px; height: 1px; background: var(--border); }
+  .step-divider { width: 8px; height: 1px; background: var(--border); flex-shrink: 0; }
 
-  /* MAIN */
   main { flex: 1; display: flex; overflow: hidden; }
   .stage { flex: 1; display: none; overflow: hidden; position: relative; }
   .stage.active { display: flex; }
 
   .work {
     flex: 1; display: flex; align-items: center; justify-content: center;
-    padding: 24px; overflow: auto;
-    position: relative;
+    padding: 24px; overflow: auto; position: relative;
     background-image:
       linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
       linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
     background-size: 24px 24px;
   }
+  /* For tune step, content can be tall, align to start so top isn't cut off */
+  .work.scroll-top { align-items: flex-start; padding-top: 24px; }
 
   .panel {
-    width: 320px;
-    background: var(--panel);
+    width: 320px; background: var(--panel);
     border-left: 1px solid var(--border);
     display: flex; flex-direction: column;
-    overflow-y: auto;
-    flex-shrink: 0;
+    overflow-y: auto; flex-shrink: 0;
   }
   .panel-section { padding: 16px; border-bottom: 1px solid var(--border); }
   .panel-section h3 {
@@ -119,13 +115,7 @@
     text-transform: uppercase; letter-spacing: 0.12em;
     color: var(--muted); margin-bottom: 12px;
   }
-  .panel-section .hint {
-    font-size: 10px; color: var(--muted-2);
-    margin-top: -6px; margin-bottom: 8px;
-    line-height: 1.5;
-  }
 
-  /* DROPZONE */
   .dropzone {
     width: 520px; max-width: 80vw;
     aspect-ratio: 1;
@@ -135,18 +125,20 @@
     gap: 16px; cursor: pointer;
     transition: all 0.2s;
     background: var(--panel);
+    position: relative;
   }
   .dropzone:hover, .dropzone.dragover {
-    border-color: var(--accent);
-    background: var(--accent-glow);
+    border-color: var(--accent); background: var(--accent-glow);
   }
   .dropzone-icon { font-size: 32px; color: var(--muted); line-height: 1; }
   .dropzone:hover .dropzone-icon, .dropzone.dragover .dropzone-icon { color: var(--accent); }
   .dropzone-title { font-size: 14px; font-weight: 600; }
   .dropzone-hint { font-size: 11px; color: var(--muted); text-align: center; padding: 0 16px; }
   input[type=file] { display: none; }
+  .dropzone-actions {
+    display: flex; gap: 8px; margin-top: 12px;
+  }
 
-  /* BUTTONS */
   button, .btn {
     font-family: var(--mono); font-size: 11px; font-weight: 500;
     text-transform: uppercase; letter-spacing: 0.08em;
@@ -175,7 +167,6 @@
   .footer-bar .spacer { flex: 1; }
   .footer-info { font-size: 11px; color: var(--muted); }
 
-  /* MATERIALS */
   .material-row {
     display: flex; align-items: center; gap: 8px;
     padding: 8px; border: 1px solid var(--border);
@@ -198,38 +189,36 @@
     min-width: 0;
   }
   .material-name:focus { color: var(--accent); }
-  .material-count {
-    font-size: 10px; color: var(--muted);
-    background: var(--bg); padding: 2px 6px;
-  }
+  .material-count { font-size: 10px; color: var(--muted); background: var(--bg); padding: 2px 6px; }
   .material-delete {
     width: 22px; height: 22px; padding: 0;
     justify-content: center;
-    border: 1px solid transparent;
-    background: transparent;
+    border: 1px solid transparent; background: transparent;
   }
   .material-delete:hover { border-color: var(--danger); color: var(--danger); }
 
-  /* CANVAS WRAPPERS */
   .canvas-wrap {
-    position: relative; display: inline-block;
+    position: relative;
     background: var(--panel);
     border: 1px solid var(--border);
     box-shadow: 0 0 60px rgba(0,0,0,0.5);
   }
-  #drawCanvas, #cropCanvas {
-    display: block; cursor: crosshair;
-    max-width: 75vw; max-height: 75vh;
+  /* Wrap canvas in scrollable container for zoom/pan in draw step */
+  .canvas-zoom-wrap {
+    max-width: 75vw; max-height: 70vh;
+    overflow: auto;
+    background: #050505;
+    border: 1px solid var(--border);
+    display: inline-block;
   }
-  .canvas-overlay {
-    position: absolute; top: 8px; left: 8px;
-    font-size: 10px; color: var(--muted);
-    background: rgba(0,0,0,0.6);
-    padding: 4px 8px;
-    pointer-events: none;
+  #drawCanvas { display: block; cursor: crosshair; }
+  #cropCanvas { display: block; }
+  .canvas-toolbar {
+    display: flex; gap: 8px; align-items: center;
+    margin-bottom: 8px; flex-wrap: wrap;
+    font-size: 11px; color: var(--muted);
   }
 
-  /* SLIDERS / FIELDS */
   .field { margin-bottom: 14px; }
   .field label {
     display: flex; justify-content: space-between;
@@ -245,13 +234,11 @@
   }
   input[type=range] {
     width: 100%; appearance: none; -webkit-appearance: none;
-    height: 4px;
-    background: var(--panel-2); outline: none; cursor: pointer;
+    height: 4px; background: var(--panel-2); outline: none; cursor: pointer;
   }
   input[type=range]::-webkit-slider-thumb {
     appearance: none; -webkit-appearance: none;
-    width: 14px; height: 14px;
-    background: var(--accent); cursor: pointer;
+    width: 14px; height: 14px; background: var(--accent); cursor: pointer;
   }
   input[type=range]::-moz-range-thumb {
     width: 14px; height: 14px; background: var(--accent);
@@ -265,7 +252,6 @@
   }
   select:focus, input:focus { border-color: var(--accent); }
 
-  /* TOGGLE */
   .toggle {
     display: flex; align-items: center; gap: 8px;
     font-size: 11px; cursor: pointer;
@@ -291,7 +277,6 @@
     left: 16px; background: var(--accent);
   }
 
-  /* QUALITY PICKER (STEP 0) */
   .quality-grid {
     display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;
     max-width: 720px; width: 100%;
@@ -313,32 +298,20 @@
     letter-spacing: 0.12em; color: var(--text);
     margin-bottom: 8px; font-weight: 600;
   }
-  .quality-desc {
-    font-size: 11px; color: var(--muted); line-height: 1.6;
-  }
+  .quality-desc { font-size: 11px; color: var(--muted); line-height: 1.6; }
 
-  /* CROP STEP */
-  .crop-stage {
-    position: relative;
-    user-select: none;
-  }
+  .crop-stage { position: relative; user-select: none; }
   .crop-canvas-wrap {
-    position: relative;
-    background: #050505;
-    border: 1px solid var(--border);
-    overflow: hidden;
+    position: relative; background: #050505;
+    border: 1px solid var(--border); overflow: hidden;
   }
   .crop-canvas-wrap canvas { display: block; }
-  .crop-overlay {
-    position: absolute; inset: 0;
-    pointer-events: none;
-  }
+  .crop-overlay { position: absolute; inset: 0; pointer-events: none; }
   .crop-window {
     position: absolute;
     border: 2px solid var(--accent);
     box-shadow: 0 0 0 9999px rgba(0,0,0,0.65);
-    cursor: move;
-    pointer-events: auto;
+    cursor: move; pointer-events: auto;
   }
   .crop-handle {
     position: absolute;
@@ -351,12 +324,8 @@
   .crop-handle.tr { top: -7px; right: -7px; cursor: nesw-resize; }
   .crop-handle.bl { bottom: -7px; left: -7px; cursor: nesw-resize; }
   .crop-handle.br { bottom: -7px; right: -7px; cursor: nwse-resize; }
-  .crop-instruction {
-    font-size: 11px; color: var(--muted);
-    margin-top: 12px; text-align: center;
-  }
+  .crop-instruction { font-size: 11px; color: var(--muted); margin-top: 12px; text-align: center; }
 
-  /* ALBEDO UPLOAD */
   .albedo-grid {
     display: grid; gap: 12px;
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -366,31 +335,26 @@
     padding: 12px;
   }
   .albedo-card-head {
-    display: flex; align-items: center; gap: 8px;
-    margin-bottom: 10px;
+    display: flex; align-items: center; gap: 8px; margin-bottom: 10px;
   }
-  .albedo-card-head .name {
-    font-weight: 600; flex: 1; font-size: 12px;
-  }
+  .albedo-card-head .name { font-weight: 600; flex: 1; font-size: 12px; }
   .albedo-slot {
     aspect-ratio: 1; border: 1px dashed var(--border-light);
     display: flex; align-items: center; justify-content: center;
     cursor: pointer; position: relative;
-    background: var(--bg);
-    overflow: hidden;
+    background: var(--bg); overflow: hidden;
   }
   .albedo-slot:hover { border-color: var(--accent); }
   .albedo-slot.dragover { border-color: var(--accent); background: var(--accent-glow); }
   .albedo-slot img {
-    position: absolute; inset: 0; width: 100%; height: 100%;
-    object-fit: cover;
+    position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
   }
   .albedo-slot .placeholder {
     color: var(--muted); font-size: 10px; text-align: center;
     text-transform: uppercase; letter-spacing: 0.08em;
   }
 
-  /* PREVIEW STEP */
+  /* TUNE STEP layout */
   .preview-container {
     width: 100%; max-width: 1100px;
     display: grid;
@@ -398,33 +362,31 @@
     gap: 20px;
     align-items: start;
   }
+  @media (max-width: 900px) {
+    .preview-container { grid-template-columns: 1fr; }
+  }
   .preview-main {
     background: #000; border: 1px solid var(--border);
-    aspect-ratio: 1;
-    position: relative;
+    aspect-ratio: 1; position: relative; max-width: 100%;
   }
   .preview-canvas { width: 100%; height: 100%; display: block; }
   .preview-tabs {
     display: flex; gap: 4px; padding: 8px; background: var(--panel);
-    border-bottom: 1px solid var(--border);
+    border: 1px solid var(--border); border-bottom: none;
+    flex-wrap: wrap;
   }
   .preview-tab {
-    flex: 1; padding: 8px 6px; font-size: 10px;
+    flex: 1; min-width: 80px;
+    padding: 8px 6px; font-size: 10px;
     text-align: center; cursor: pointer;
     text-transform: uppercase; letter-spacing: 0.08em;
     color: var(--muted); border: 1px solid var(--border);
-    background: var(--panel-2);
-    transition: all 0.15s;
+    background: var(--panel-2); transition: all 0.15s;
   }
   .preview-tab:hover { color: var(--text); }
   .preview-tab.active {
     color: var(--accent); border-color: var(--accent);
     background: var(--accent-glow);
-  }
-  .map-thumbnail {
-    width: 100%; aspect-ratio: 1;
-    background: #1a1a1a;
-    image-rendering: pixelated;
   }
   .material-nav {
     display: flex; align-items: center; gap: 8px;
@@ -432,15 +394,10 @@
     border: 1px solid var(--border);
     margin-bottom: 12px;
   }
-  .material-nav .label {
-    flex: 1; font-size: 12px; font-weight: 600;
-  }
+  .material-nav .label { flex: 1; font-size: 12px; font-weight: 600; }
   .material-nav .swatch { width: 18px; height: 18px; }
-  .material-counter {
-    font-size: 10px; color: var(--muted);
-  }
+  .material-counter { font-size: 10px; color: var(--muted); margin-right: 8px; }
 
-  /* MAP OUTPUT GRID */
   .maps-grid {
     display: grid; gap: 16px;
     grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -465,7 +422,6 @@
     image-rendering: pixelated;
   }
 
-  /* TOOLBAR */
   .toolbar {
     display: flex; flex-direction: column; gap: 4px;
     padding: 8px; background: var(--panel);
@@ -483,7 +439,6 @@
   .tool.active { color: var(--accent); border-color: var(--accent); background: var(--accent-glow); }
   .tool-divider { height: 1px; background: var(--border); margin: 4px 0; }
 
-  /* TOAST */
   .toast {
     position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
     background: var(--panel); border: 1px solid var(--accent);
@@ -494,32 +449,33 @@
   }
   .toast.show { opacity: 1; }
 
-  /* SCROLLBARS */
   ::-webkit-scrollbar { width: 8px; height: 8px; }
   ::-webkit-scrollbar-track { background: var(--bg); }
   ::-webkit-scrollbar-thumb { background: var(--border-light); }
   ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
 
-  /* ADVANCED SECTION */
   .advanced-section {
     border-top: 1px dashed var(--border-light);
-    padding-top: 12px; margin-top: 12px;
+    padding-top: 12px; margin-top: 0;
   }
-  .advanced-section.collapsed > *:not(.advanced-toggle) {
-    display: none;
-  }
+  .advanced-section.collapsed > *:not(.advanced-toggle) { display: none; }
   .advanced-toggle {
     font-size: 10px; color: var(--muted);
     text-transform: uppercase; letter-spacing: 0.12em;
     cursor: pointer; padding: 4px 0;
     display: flex; align-items: center; gap: 8px;
   }
-  .advanced-toggle::before {
-    content: '▾'; transition: transform 0.15s;
+  .advanced-toggle::before { content: '▾'; transition: transform 0.15s; }
+  .advanced-section.collapsed .advanced-toggle::before { transform: rotate(-90deg); }
+
+  .busy-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7);
+    display: none; align-items: center; justify-content: center;
+    z-index: 2000; color: var(--accent);
+    font-size: 12px; text-transform: uppercase; letter-spacing: 0.12em;
   }
-  .advanced-section.collapsed .advanced-toggle::before {
-    transform: rotate(-90deg);
-  }
+  .busy-overlay.show { display: flex; }
 </style>
 </head>
 <body>
@@ -548,29 +504,29 @@
 
   <main>
 
-    <!-- STEP 0: QUALITY PICKER -->
+    <!-- STEP 0: QUALITY -->
     <section class="stage active" data-stage="0">
       <div class="work">
         <div style="text-align:center; width:100%;">
           <h2 style="font-size:16px; margin-bottom:4px;">Choose output quality</h2>
           <p style="font-size:11px; color:var(--muted); margin-bottom:24px;">
-            Pick based on how close the player will see this object. Affects normal map detail and file size.
+            Pick based on how close the player sees this object. Affects final PNG resolution.
           </p>
           <div class="quality-grid" id="qualityGrid">
             <div class="quality-card" data-res="2048">
               <div class="quality-res">2048 × 2048</div>
               <div class="quality-tag">HERO</div>
-              <div class="quality-desc">Held items, weapons, examined props, main character gear. Looks great close-up.</div>
+              <div class="quality-desc">Held items, weapons, examined props, main character gear.</div>
             </div>
             <div class="quality-card selected" data-res="1024">
               <div class="quality-res">1024 × 1024</div>
               <div class="quality-tag">MIDGROUND</div>
-              <div class="quality-desc">Furniture, props you walk past, environment objects you see clearly but don't interact with.</div>
+              <div class="quality-desc">Furniture, props you walk past but don't interact with.</div>
             </div>
             <div class="quality-card" data-res="512">
               <div class="quality-res">512 × 512</div>
               <div class="quality-tag">BACKGROUND</div>
-              <div class="quality-desc">Buildings, distant trees, skybox props, things you only see from afar.</div>
+              <div class="quality-desc">Buildings, distant trees, skybox props.</div>
             </div>
             <div class="quality-card" data-res="256">
               <div class="quality-res">256 × 256</div>
@@ -582,16 +538,16 @@
       </div>
     </section>
 
-    <!-- STEP 1: UPLOAD UV -->
+    <!-- STEP 1: UPLOAD -->
     <section class="stage" data-stage="1">
       <div class="work">
-        <div>
+        <div id="uvDropContainer">
           <div class="dropzone" id="uvDrop">
             <div class="dropzone-icon">▦</div>
             <div class="dropzone-title">Drop your UV layout</div>
-            <div class="dropzone-hint">PNG / JPG · screenshot or export of the flat unwrapped UV from Blender, Maya, etc.</div>
-            <div class="btn-row" style="margin-top:8px;">
-              <button class="btn" onclick="document.getElementById('uvFile').click()">Browse Files</button>
+            <div class="dropzone-hint">PNG / JPG · screenshot or export of the flat unwrapped UV</div>
+            <div class="dropzone-actions">
+              <button class="btn" id="browseBtn">Browse Files</button>
             </div>
             <input type="file" id="uvFile" accept="image/*">
           </div>
@@ -605,7 +561,7 @@
         <div style="text-align:center; margin-bottom:16px;">
           <h2 style="font-size:14px; margin-bottom:4px;">Crop to 1:1 square</h2>
           <p style="font-size:11px; color:var(--muted);">
-            Drag the box to position · drag corners to resize · the highlighted square is what gets used
+            Drag the box to position · drag corners to resize · the bright square is what gets used
           </p>
         </div>
         <div class="crop-stage">
@@ -623,6 +579,7 @@
           <div class="crop-instruction">
             <button class="btn" id="cropReset" style="margin-top: 12px;">Reset Crop</button>
             <button class="btn" id="cropFit" style="margin-top: 12px;">Fit to Image</button>
+            <button class="btn" id="cropChangeImage" style="margin-top: 12px;">Use Different Image</button>
           </div>
         </div>
       </div>
@@ -648,15 +605,21 @@
         <div class="tool active" data-tool="polygon" title="Polygon (P)">⬠</div>
         <div class="tool" data-tool="erase" title="Delete shape (D)">⌫</div>
         <div class="tool-divider"></div>
-        <div class="tool" id="undoBtn" title="Undo last point (Ctrl+Z)">↶</div>
-        <div class="tool" id="clearShapeBtn" title="Cancel current shape (Esc)">✕</div>
+        <div class="tool" id="undoBtn" title="Undo (Ctrl+Z)">↶</div>
+        <div class="tool" id="clearShapeBtn" title="Cancel shape (Esc)">✕</div>
+        <div class="tool-divider"></div>
+        <div class="tool" id="zoomInBtn" title="Zoom in (+)">+</div>
+        <div class="tool" id="zoomOutBtn" title="Zoom out (-)">−</div>
+        <div class="tool" id="zoomResetBtn" title="Fit (0)">⊡</div>
       </div>
-      <div class="work">
-        <div class="canvas-wrap">
+      <div class="work" style="flex-direction:column; align-items:center; justify-content:flex-start; padding-top:16px;">
+        <div class="canvas-toolbar">
+          <span>Zoom: <span id="zoomLevel">100%</span></span>
+          <span>·</span>
+          <span>Click to add points · click first point to close · scroll to zoom · Esc to cancel</span>
+        </div>
+        <div class="canvas-zoom-wrap" id="drawZoomWrap">
           <canvas id="drawCanvas"></canvas>
-          <div class="canvas-overlay">
-            Click to add points · click first point or double-click to close · Esc to cancel
-          </div>
         </div>
       </div>
       <aside class="panel">
@@ -688,24 +651,24 @@
         <div style="width: 100%; max-width: 880px;">
           <h2 style="font-size:14px; margin-bottom:8px;">Upload material albedos</h2>
           <p style="font-size:11px; color: var(--muted); margin-bottom:20px;">
-            One texture per material. Should tile seamlessly for best results.
+            One texture per material. Should tile seamlessly for best results. You can skip uploads for materials you want to use the flat color for.
           </p>
           <div class="albedo-grid" id="albedoGrid"></div>
         </div>
       </div>
     </section>
 
-    <!-- STEP 6: TUNE (PER-MATERIAL 3D PREVIEW) -->
+    <!-- STEP 6: TUNE -->
     <section class="stage" data-stage="6">
-      <div class="work">
+      <div class="work scroll-top">
         <div class="preview-container">
           <div>
             <div class="material-nav">
               <span class="swatch" id="tuneMatSwatch"></span>
               <span class="label" id="tuneMatName">—</span>
               <span class="material-counter" id="tuneMatCounter">— / —</span>
-              <button class="btn" id="tunePrev">←</button>
-              <button class="btn" id="tuneNext">→</button>
+              <button class="btn" id="tunePrev">← Prev</button>
+              <button class="btn" id="tuneNext">Next →</button>
             </div>
             <div class="preview-tabs" id="previewTabs">
               <div class="preview-tab active" data-view="rendered">Rendered</div>
@@ -740,7 +703,7 @@
               <div class="field">
                 <label>Detail Contrast <span class="val" id="tuneRoughnessContrastVal">1.0</span></label>
                 <input type="range" id="tuneRoughnessContrast" min="0" max="3" step="0.05" value="1">
-                <div class="field-hint">How much the albedo detail varies roughness around the base value</div>
+                <div class="field-hint">How much albedo detail varies roughness around base</div>
               </div>
               <label class="toggle">
                 <input type="checkbox" id="tuneRoughnessInvert">
@@ -757,11 +720,11 @@
               </div>
             </div>
             <div class="panel-section">
-              <h3>Specular (Dielectric F0)</h3>
+              <h3>Specular</h3>
               <div class="field">
                 <label>Value <span class="val" id="tuneSpecularVal">0.50</span></label>
                 <input type="range" id="tuneSpecular" min="0" max="1" step="0.01" value="0.5">
-                <div class="field-hint">For non-metals only. 0.5 = IOR 1.5 (most plastics/paint). Leave at 0.5 unless you know the IOR.</div>
+                <div class="field-hint">For non-metals. 0.5 = IOR 1.5 (most plastics/paint). Leave at 0.5 unless you know the IOR.</div>
               </div>
             </div>
             <div class="panel-section">
@@ -769,7 +732,7 @@
               <div class="field">
                 <label>Scale <span class="val" id="tuneTileScaleVal">1.0×</span></label>
                 <input type="range" id="tuneTileScale" min="0.1" max="8" step="0.1" value="1">
-                <div class="field-hint">How many times the texture repeats inside the mask area</div>
+                <div class="field-hint">How many times the texture repeats inside the mask</div>
               </div>
               <div class="field">
                 <label>Rotation <span class="val" id="tuneTileRotVal">0°</span></label>
@@ -788,7 +751,7 @@
               <div class="field">
                 <label>Sheen Amount <span class="val" id="tuneSheenVal">0.00</span></label>
                 <input type="range" id="tuneSheen" min="0" max="1" step="0.01" value="0" disabled>
-                <div class="field-hint">Grazing highlight for fabric, velvet, dust. Only used if enabled.</div>
+                <div class="field-hint">Grazing highlight for fabric, velvet, dust.</div>
               </div>
             </div>
           </aside>
@@ -798,7 +761,7 @@
 
     <!-- STEP 7: EXPORT -->
     <section class="stage" data-stage="7">
-      <div class="work" style="flex-direction: column; align-items: stretch; padding: 24px 32px;">
+      <div class="work scroll-top" style="flex-direction: column; align-items: stretch; padding: 24px 32px;">
         <div style="display:flex; align-items:center; gap:16px; margin-bottom:20px;">
           <div>
             <h2 style="font-size:14px;">Generated PBR Maps</h2>
@@ -818,13 +781,14 @@
   <div class="footer-bar">
     <button id="prevBtn">← Back</button>
     <div class="spacer"></div>
-    <div class="footer-info" id="footerInfo">Step 0 — Choose your output quality to begin</div>
+    <div class="footer-info" id="footerInfo">Step 0 — Choose output quality</div>
     <div class="spacer"></div>
     <button class="primary" id="nextBtn">Next →</button>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
+<div class="busy-overlay" id="busyOverlay">Processing…</div>
 
 <script type="module">
 import * as THREE from 'three';
@@ -835,30 +799,16 @@ import * as THREE from 'three';
 const state = {
   step: 0,
   exportRes: 1024,
-  // Upload
-  uvImageOriginal: null,   // original loaded image
-  uvImage: null,           // cropped/squared image (canvas)
-  uvW: 0,
-  uvH: 0,
-  // Crop
-  crop: { x: 0, y: 0, size: 0 },  // in original image coordinates
-  // Materials
+  uvImageOriginal: null,
+  uvImage: null,
+  uvW: 0, uvH: 0,
+  crop: { x: 0, y: 0, size: 0 },
   materials: [
-    { id: 1, name: 'Material A', color: '#ff6b1a', albedo: null,
-      normalStrength: 2.0, roughnessBase: 0.5, roughnessContrast: 1.0, roughnessInvert: false,
-      metallic: 0, specular: 0.5, tileScale: 1.0, tileRot: 0,
-      sheen: 0, sheenEnabled: false },
-    { id: 2, name: 'Material B', color: '#4ade80', albedo: null,
-      normalStrength: 2.0, roughnessBase: 0.5, roughnessContrast: 1.0, roughnessInvert: false,
-      metallic: 0, specular: 0.5, tileScale: 1.0, tileRot: 0,
-      sheen: 0, sheenEnabled: false },
-    { id: 3, name: 'Material C', color: '#3b82f6', albedo: null,
-      normalStrength: 2.0, roughnessBase: 0.5, roughnessContrast: 1.0, roughnessInvert: false,
-      metallic: 0, specular: 0.5, tileScale: 1.0, tileRot: 0,
-      sheen: 0, sheenEnabled: false },
+    makeMaterial(1, 'Material A', '#ff6b1a'),
+    makeMaterial(2, 'Material B', '#4ade80'),
+    makeMaterial(3, 'Material C', '#3b82f6'),
   ],
   nextMaterialId: 4,
-  // Shapes
   shapes: [],
   nextShapeId: 1,
   currentShape: null,
@@ -867,17 +817,29 @@ const state = {
   uvOpacity: 1.0,
   maskOpacity: 0.5,
   hoveredShape: null,
+  // Draw step zoom
+  drawZoom: 1.0,
+  drawBaseW: 0,
+  drawBaseH: 0,
   // Tune step
   tuneIndex: 0,
   tuneView: 'rendered',
-  // Generated maps (final composited)
-  outputAlbedo: null,
-  outputNormal: null,
-  outputRoughness: null,
-  outputMetallic: null,
-  outputAO: null,
-  outputSpecular: null,
+  // Final outputs
+  outputAlbedo: null, outputNormal: null, outputRoughness: null,
+  outputMetallic: null, outputAO: null, outputSpecular: null,
 };
+
+function makeMaterial(id, name, color) {
+  return {
+    id, name, color, albedo: null,
+    previewAlbedo: null,         // downscaled cache for tune step
+    normalStrength: 2.0,
+    roughnessBase: 0.5, roughnessContrast: 1.0, roughnessInvert: false,
+    metallic: 0, specular: 0.5,
+    tileScale: 1.0, tileRot: 0,
+    sheen: 0, sheenEnabled: false,
+  };
+}
 
 // =========================================================================
 // UTILITIES
@@ -890,14 +852,17 @@ function toast(msg) {
   toast._t = setTimeout(() => t.classList.remove('show'), 1800);
 }
 
+function busy(on) {
+  document.getElementById('busyOverlay').classList.toggle('show', on);
+}
+
 function pointInPolygon(pt, poly) {
   let inside = false;
   for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
     const xi = poly[i][0], yi = poly[i][1];
     const xj = poly[j][0], yj = poly[j][1];
-    const intersect = ((yi > pt[1]) !== (yj > pt[1])) &&
-      (pt[0] < (xj - xi) * (pt[1] - yi) / (yj - yi) + xi);
-    if (intersect) inside = !inside;
+    if (((yi > pt[1]) !== (yj > pt[1])) &&
+        (pt[0] < (xj - xi) * (pt[1] - yi) / (yj - yi) + xi)) inside = !inside;
   }
   return inside;
 }
@@ -918,6 +883,34 @@ function loadImageFromFile(file) {
   });
 }
 
+// Downscale an image/canvas to max size, returns a new canvas
+function downscale(source, maxSize = 512) {
+  const w = source.width || source.naturalWidth;
+  const h = source.height || source.naturalHeight;
+  if (w <= maxSize && h <= maxSize) {
+    // Already small, just copy to a canvas
+    const c = document.createElement('canvas');
+    c.width = w; c.height = h;
+    c.getContext('2d').drawImage(source, 0, 0);
+    return c;
+  }
+  const scale = maxSize / Math.max(w, h);
+  const c = document.createElement('canvas');
+  c.width = Math.round(w * scale);
+  c.height = Math.round(h * scale);
+  c.getContext('2d').drawImage(source, 0, 0, c.width, c.height);
+  return c;
+}
+
+// Get the preview-sized albedo for a material, caching it
+function getPreviewAlbedo(material) {
+  if (!material.albedo) return null;
+  if (!material.previewAlbedo) {
+    material.previewAlbedo = downscale(material.albedo, 512);
+  }
+  return material.previewAlbedo;
+}
+
 // =========================================================================
 // STEP NAVIGATION
 // =========================================================================
@@ -927,7 +920,7 @@ const STEP_MESSAGES = {
   2: 'Step 2 — Crop your image to a 1:1 square',
   3: 'Step 3 — Define one material per surface type',
   4: 'Step 4 — Draw polygon masks on the UV',
-  5: 'Step 5 — Upload an albedo texture per material',
+  5: 'Step 5 — Upload an albedo per material (optional)',
   6: 'Step 6 — Tune each material in 3D preview',
   7: 'Step 7 — Download your PBR maps',
 };
@@ -936,10 +929,17 @@ function setStep(n) {
   if (n < 0 || n > 7) return;
   // Validation
   if (n >= 2 && !state.uvImageOriginal) { toast('Upload a UV first'); return; }
-  if (n >= 3 && !state.uvImage) { toast('Confirm crop first'); return; }
+  if (n >= 3 && !state.uvImage) {
+    // Apply crop if going from step 2 forward
+    if (state.step === 2) applyCrop();
+    if (!state.uvImage) { toast('Confirm crop first'); return; }
+  }
   if (n >= 4 && state.materials.length === 0) { toast('Add at least one material'); return; }
-  if (n >= 5 && state.shapes.length === 0) { toast('Draw at least one mask shape'); return; }
+  if (n >= 6 && state.shapes.length === 0) { toast('Draw at least one mask shape'); return; }
   if (n >= 7 && state.shapes.length === 0) { toast('Draw at least one mask shape'); return; }
+
+  // If leaving step 2, apply crop
+  if (state.step === 2 && n !== 2) applyCrop();
 
   state.step = n;
   document.querySelectorAll('.stage').forEach(s => s.classList.remove('active'));
@@ -963,6 +963,7 @@ function setStep(n) {
   if (n === 7) generateFinalMaps();
 }
 
+// SINGLE source of truth for navigation
 document.querySelectorAll('.step').forEach(s => {
   s.addEventListener('click', () => setStep(parseInt(s.dataset.step)));
 });
@@ -970,54 +971,85 @@ document.getElementById('prevBtn').addEventListener('click', () => setStep(state
 document.getElementById('nextBtn').addEventListener('click', () => setStep(state.step + 1));
 
 // =========================================================================
-// STEP 0: QUALITY PICKER
+// STEP 0: QUALITY
 // =========================================================================
 document.querySelectorAll('.quality-card').forEach(card => {
   card.addEventListener('click', () => {
     document.querySelectorAll('.quality-card').forEach(c => c.classList.remove('selected'));
     card.classList.add('selected');
     state.exportRes = parseInt(card.dataset.res);
-    toast(`Output set to ${state.exportRes}×${state.exportRes}`);
+    toast(`Output: ${state.exportRes}×${state.exportRes}`);
   });
 });
 
 // =========================================================================
 // STEP 1: UPLOAD
 // =========================================================================
-const uvDrop = document.getElementById('uvDrop');
 const uvFile = document.getElementById('uvFile');
+document.getElementById('browseBtn').addEventListener('click', () => uvFile.click());
 
-uvDrop.addEventListener('click', () => uvFile.click());
-uvDrop.addEventListener('dragover', e => { e.preventDefault(); uvDrop.classList.add('dragover'); });
-uvDrop.addEventListener('dragleave', () => uvDrop.classList.remove('dragover'));
-uvDrop.addEventListener('drop', async e => {
-  e.preventDefault(); uvDrop.classList.remove('dragover');
-  const f = e.dataTransfer.files[0];
-  if (f) await handleUVUpload(f);
-});
+function setupDropzone() {
+  const drop = document.getElementById('uvDrop');
+  drop.addEventListener('click', e => {
+    // Only open file picker if we click on the dropzone itself or non-button children
+    if (e.target.tagName === 'BUTTON') return;
+    uvFile.click();
+  });
+  drop.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('dragover'); });
+  drop.addEventListener('dragleave', () => drop.classList.remove('dragover'));
+  drop.addEventListener('drop', async e => {
+    e.preventDefault(); drop.classList.remove('dragover');
+    const f = e.dataTransfer.files[0];
+    if (f) await handleUVUpload(f);
+  });
+}
+setupDropzone();
+
 uvFile.addEventListener('change', async e => {
   const f = e.target.files[0];
   if (f) await handleUVUpload(f);
+  uvFile.value = '';  // Allow re-uploading the same file
 });
 
 async function handleUVUpload(file) {
   try {
     const img = await loadImageFromFile(file);
     state.uvImageOriginal = img;
+    state.uvImage = null;  // Force re-crop
     toast(`UV loaded: ${img.width}×${img.height}`);
-    uvDrop.innerHTML = `
-      <img src="${img.src}" style="max-width: 100%; max-height: 70%; object-fit: contain;">
-      <div class="dropzone-title" style="margin-top: 12px;">${file.name}</div>
-      <div class="dropzone-hint">${img.width} × ${img.height} · Click to change</div>
-    `;
+    updateUploadUI(file.name, img);
     setTimeout(() => setStep(2), 500);
   } catch (e) {
     toast('Failed to load image');
   }
 }
 
+function updateUploadUI(fileName, img) {
+  const container = document.getElementById('uvDropContainer');
+  container.innerHTML = `
+    <div class="dropzone" id="uvDrop">
+      <img src="${img.src}" style="max-width: 70%; max-height: 60%; object-fit: contain;">
+      <div class="dropzone-title">${fileName}</div>
+      <div class="dropzone-hint">${img.width} × ${img.height}</div>
+      <div class="dropzone-actions">
+        <button class="btn" id="changeImageBtn">Change Image</button>
+        <button class="btn" id="continueBtn">Continue →</button>
+      </div>
+    </div>
+  `;
+  setupDropzone();
+  document.getElementById('changeImageBtn').addEventListener('click', e => {
+    e.stopPropagation();
+    uvFile.click();
+  });
+  document.getElementById('continueBtn').addEventListener('click', e => {
+    e.stopPropagation();
+    setStep(2);
+  });
+}
+
 // =========================================================================
-// STEP 2: CROP TO 1:1
+// STEP 2: CROP
 // =========================================================================
 const cropCanvas = document.getElementById('cropCanvas');
 const cropWindow = document.getElementById('cropWindow');
@@ -1027,7 +1059,6 @@ let cropDisplayScale = 1;
 function initCropStep() {
   if (!state.uvImageOriginal) return;
   const img = state.uvImageOriginal;
-  // Fit into viewport
   const maxW = Math.min(window.innerWidth * 0.7, 800);
   const maxH = Math.min(window.innerHeight * 0.6, 700);
   const scale = Math.min(maxW / img.width, maxH / img.height, 1);
@@ -1038,9 +1069,7 @@ function initCropStep() {
   cropCanvas.height = dispH;
   cropWrap.style.width = dispW + 'px';
   cropWrap.style.height = dispH + 'px';
-  const ctx = cropCanvas.getContext('2d');
-  ctx.drawImage(img, 0, 0, dispW, dispH);
-  // Init crop window centered, square = min dimension
+  cropCanvas.getContext('2d').drawImage(img, 0, 0, dispW, dispH);
   const cropSize = Math.min(img.width, img.height);
   state.crop = {
     x: (img.width - cropSize) / 2,
@@ -1058,12 +1087,10 @@ function updateCropWindow() {
   cropWindow.style.height = (state.crop.size * s) + 'px';
 }
 
-// Crop interaction
 let cropDrag = null;
 cropWindow.addEventListener('mousedown', e => {
   if (e.target.classList.contains('crop-handle')) {
-    cropDrag = { type: 'resize', handle: e.target.dataset.handle, startX: e.clientX, startY: e.clientY,
-      orig: {...state.crop} };
+    cropDrag = { type: 'resize', handle: e.target.dataset.handle, startX: e.clientX, startY: e.clientY, orig: {...state.crop} };
   } else {
     cropDrag = { type: 'move', startX: e.clientX, startY: e.clientY, orig: {...state.crop} };
   }
@@ -1078,7 +1105,6 @@ window.addEventListener('mousemove', e => {
     state.crop.x = Math.max(0, Math.min(img.width - state.crop.size, cropDrag.orig.x + dx));
     state.crop.y = Math.max(0, Math.min(img.height - state.crop.size, cropDrag.orig.y + dy));
   } else {
-    // Resize - keep square. Use max of dx/dy magnitude for intuitive feel
     const h = cropDrag.handle;
     let newSize = cropDrag.orig.size;
     let newX = cropDrag.orig.x;
@@ -1108,6 +1134,9 @@ document.getElementById('cropFit').addEventListener('click', () => {
   state.crop = { x: (img.width - size) / 2, y: (img.height - size) / 2, size };
   updateCropWindow();
 });
+document.getElementById('cropChangeImage').addEventListener('click', () => {
+  uvFile.click();
+});
 
 function applyCrop() {
   if (!state.uvImageOriginal) return;
@@ -1116,15 +1145,11 @@ function applyCrop() {
   const out = document.createElement('canvas');
   out.width = c.size;
   out.height = c.size;
-  const ctx = out.getContext('2d');
-  ctx.drawImage(img, c.x, c.y, c.size, c.size, 0, 0, c.size, c.size);
+  out.getContext('2d').drawImage(img, c.x, c.y, c.size, c.size, 0, 0, c.size, c.size);
   state.uvImage = out;
   state.uvW = c.size;
   state.uvH = c.size;
 }
-
-// Hook into navigation: apply crop when leaving step 2
-const origSetStep = setStep;
 
 // =========================================================================
 // STEP 3: MATERIALS
@@ -1151,15 +1176,11 @@ function renderMaterials() {
 document.getElementById('addMaterial').addEventListener('click', () => {
   const palette = ['#ff6b1a','#4ade80','#3b82f6','#a855f7','#eab308','#ec4899','#06b6d4','#f97316'];
   const idx = state.materials.length % palette.length;
-  state.materials.push({
-    id: state.nextMaterialId++,
-    name: `Material ${String.fromCharCode(65 + state.materials.length)}`,
-    color: palette[idx],
-    albedo: null,
-    normalStrength: 2.0, roughnessBase: 0.5, roughnessContrast: 1.0, roughnessInvert: false,
-    metallic: 0, specular: 0.5, tileScale: 1.0, tileRot: 0,
-    sheen: 0, sheenEnabled: false,
-  });
+  state.materials.push(makeMaterial(
+    state.nextMaterialId++,
+    `Material ${String.fromCharCode(65 + state.materials.length)}`,
+    palette[idx]
+  ));
   renderMaterials();
 });
 
@@ -1171,7 +1192,6 @@ document.getElementById('materialsList').addEventListener('input', e => {
   if (action === 'color') { m.color = e.target.value; e.target.parentElement.style.background = m.color; }
   else if (action === 'rename') { m.name = e.target.value; }
 });
-
 document.getElementById('materialsList').addEventListener('click', e => {
   if (e.target.dataset.action === 'delete') {
     const id = parseInt(e.target.dataset.matId);
@@ -1182,13 +1202,13 @@ document.getElementById('materialsList').addEventListener('click', e => {
     renderMaterials();
   }
 });
-
 renderMaterials();
 
 // =========================================================================
-// STEP 4: DRAW MASKS
+// STEP 4: DRAW
 // =========================================================================
 const drawCanvas = document.getElementById('drawCanvas');
+const drawZoomWrap = document.getElementById('drawZoomWrap');
 const dctx = drawCanvas.getContext('2d');
 const SNAP_DIST = 12;
 
@@ -1196,10 +1216,58 @@ function renderDrawStep() {
   if (!state.uvImage) return;
   drawCanvas.width = state.uvW;
   drawCanvas.height = state.uvH;
+  // Compute base display size to fit viewport
+  const maxW = Math.min(window.innerWidth * 0.55, 1000);
+  const maxH = Math.min(window.innerHeight * 0.65, 800);
+  const fitScale = Math.min(maxW / state.uvW, maxH / state.uvH, 1);
+  state.drawBaseW = state.uvW * fitScale;
+  state.drawBaseH = state.uvH * fitScale;
+  state.drawZoom = 1.0;
+  applyDrawZoom();
   renderDrawMaterials();
   renderShapesList();
   redrawCanvas();
 }
+
+function applyDrawZoom() {
+  const w = state.drawBaseW * state.drawZoom;
+  const h = state.drawBaseH * state.drawZoom;
+  drawCanvas.style.width = w + 'px';
+  drawCanvas.style.height = h + 'px';
+  document.getElementById('zoomLevel').textContent = Math.round(state.drawZoom * 100) + '%';
+}
+
+document.getElementById('zoomInBtn').addEventListener('click', () => {
+  state.drawZoom = Math.min(8, state.drawZoom * 1.25);
+  applyDrawZoom();
+});
+document.getElementById('zoomOutBtn').addEventListener('click', () => {
+  state.drawZoom = Math.max(0.25, state.drawZoom / 1.25);
+  applyDrawZoom();
+});
+document.getElementById('zoomResetBtn').addEventListener('click', () => {
+  state.drawZoom = 1.0;
+  applyDrawZoom();
+});
+
+// Scroll-to-zoom on canvas (Ctrl+wheel or just wheel)
+drawZoomWrap.addEventListener('wheel', e => {
+  if (!e.ctrlKey && !e.metaKey && Math.abs(e.deltaY) < 5) return;
+  e.preventDefault();
+  const oldZoom = state.drawZoom;
+  if (e.deltaY < 0) state.drawZoom = Math.min(8, state.drawZoom * 1.15);
+  else state.drawZoom = Math.max(0.25, state.drawZoom / 1.15);
+  // Zoom toward cursor
+  const rect = drawZoomWrap.getBoundingClientRect();
+  const cx = e.clientX - rect.left;
+  const cy = e.clientY - rect.top;
+  const scrollX = drawZoomWrap.scrollLeft;
+  const scrollY = drawZoomWrap.scrollTop;
+  const ratio = state.drawZoom / oldZoom;
+  applyDrawZoom();
+  drawZoomWrap.scrollLeft = (scrollX + cx) * ratio - cx;
+  drawZoomWrap.scrollTop = (scrollY + cy) * ratio - cy;
+}, { passive: false });
 
 function renderDrawMaterials() {
   const list = document.getElementById('drawMaterialsList');
@@ -1243,9 +1311,7 @@ function renderShapesList() {
     `;
     row.querySelector('.material-delete').addEventListener('click', () => {
       state.shapes = state.shapes.filter(ss => ss.id !== s.id);
-      renderShapesList();
-      renderDrawMaterials();
-      redrawCanvas();
+      renderShapesList(); renderDrawMaterials(); redrawCanvas();
     });
     row.addEventListener('mouseenter', () => { state.hoveredShape = s.id; redrawCanvas(); });
     row.addEventListener('mouseleave', () => { state.hoveredShape = null; redrawCanvas(); });
@@ -1385,6 +1451,12 @@ document.addEventListener('keydown', e => {
   else if (e.key === 'z' && (e.ctrlKey || e.metaKey)) {
     e.preventDefault();
     document.getElementById('undoBtn').click();
+  } else if (e.key === '+' || e.key === '=') {
+    document.getElementById('zoomInBtn').click();
+  } else if (e.key === '-' || e.key === '_') {
+    document.getElementById('zoomOutBtn').click();
+  } else if (e.key === '0') {
+    document.getElementById('zoomResetBtn').click();
   }
 });
 
@@ -1428,6 +1500,7 @@ function renderAlbedoStep() {
       const img = await loadImageFromFile(f);
       const m = state.materials.find(m => m.id === id);
       m.albedo = img;
+      m.previewAlbedo = null;  // Invalidate cache
       renderAlbedoStep();
     });
   });
@@ -1442,216 +1515,22 @@ function renderAlbedoStep() {
       const img = await loadImageFromFile(f);
       const m = state.materials.find(m => m.id === id);
       m.albedo = img;
+      m.previewAlbedo = null;
       renderAlbedoStep();
     });
   });
 }
 
 // =========================================================================
-// STEP 6: TUNE — 3D Preview
+// MAP GENERATION
 // =========================================================================
-let threeScene, threeCamera, threeRenderer, threeMesh, threeMaterial;
-let threeMaps = {}; // per-material cached map textures
-let threeRotation = { x: 0.4, y: 0.6 };
-let threeZoom = 3;
-let threeDrag = null;
-let threeAnimating = true;
-
-function initThreeScene() {
-  const canvas = document.getElementById('previewCanvas');
-  if (threeRenderer) {
-    threeRenderer.dispose();
-  }
-  threeRenderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
-  const rect = canvas.parentElement.getBoundingClientRect();
-  threeRenderer.setSize(rect.width, rect.height, false);
-  threeRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-  threeRenderer.outputColorSpace = THREE.SRGBColorSpace;
-
-  threeScene = new THREE.Scene();
-  threeScene.background = new THREE.Color(0x000000);
-
-  threeCamera = new THREE.PerspectiveCamera(35, rect.width / rect.height, 0.1, 100);
-  threeCamera.position.set(0, 0, threeZoom);
-
-  // Lighting: 1 strong key, 1 dim fill — clean and clear like NormalMap-Online
-  const key = new THREE.DirectionalLight(0xffffff, 2.0);
-  key.position.set(2, 2, 2);
-  threeScene.add(key);
-  const fill = new THREE.DirectionalLight(0xffffff, 0.4);
-  fill.position.set(-2, -1, 2);
-  threeScene.add(fill);
-  const ambient = new THREE.AmbientLight(0xffffff, 0.15);
-  threeScene.add(ambient);
-
-  // Cube geometry
-  const geo = new THREE.BoxGeometry(1, 1, 1);
-  threeMaterial = new THREE.MeshStandardMaterial({
-    color: 0x888888,
-    roughness: 0.5,
-    metalness: 0.0,
-  });
-  threeMesh = new THREE.Mesh(geo, threeMaterial);
-  threeScene.add(threeMesh);
-
-  // Interaction
-  canvas.addEventListener('mousedown', e => {
-    threeDrag = { x: e.clientX, y: e.clientY, rx: threeRotation.x, ry: threeRotation.y };
-    threeAnimating = false;
-    e.preventDefault();
-  });
-  window.addEventListener('mousemove', e => {
-    if (!threeDrag) return;
-    const dx = (e.clientX - threeDrag.x) * 0.01;
-    const dy = (e.clientY - threeDrag.y) * 0.01;
-    threeRotation.y = threeDrag.ry + dx;
-    threeRotation.x = threeDrag.rx + dy;
-  });
-  window.addEventListener('mouseup', () => { threeDrag = null; });
-  canvas.addEventListener('wheel', e => {
-    e.preventDefault();
-    threeZoom = Math.max(1.5, Math.min(8, threeZoom + e.deltaY * 0.002));
-  }, { passive: false });
-  canvas.addEventListener('dblclick', () => {
-    threeRotation = { x: 0.4, y: 0.6 };
-    threeZoom = 3;
-    threeAnimating = true;
-  });
-
-  animateThree();
-}
-
-function animateThree() {
-  if (!threeRenderer || state.step !== 6) {
-    return;
-  }
-  if (threeAnimating && !threeDrag) {
-    threeRotation.y += 0.005;
-  }
-  threeMesh.rotation.x = threeRotation.x;
-  threeMesh.rotation.y = threeRotation.y;
-  threeCamera.position.z = threeZoom;
-  threeRenderer.render(threeScene, threeCamera);
-  requestAnimationFrame(animateThree);
-}
-
-function getCurrentMaterial() {
-  return state.materials[state.tuneIndex];
-}
-
-function initTuneStep() {
-  // Re-init three.js fresh each time (avoids stale state across steps)
-  initThreeScene();
-  state.tuneIndex = 0;
-  state.tuneView = 'rendered';
-  updateTuneUI();
-  rebuildMaterialMaps();
-  applyMaterialToPreview();
-}
-
-function updateTuneUI() {
-  const m = getCurrentMaterial();
-  if (!m) return;
-  document.getElementById('tuneMatSwatch').style.background = m.color;
-  document.getElementById('tuneMatName').textContent = m.name;
-  document.getElementById('tuneMatCounter').textContent = `${state.tuneIndex + 1} / ${state.materials.length}`;
-  document.getElementById('tuneNormalStrength').value = m.normalStrength;
-  document.getElementById('tuneNormalStrengthVal').textContent = m.normalStrength.toFixed(1);
-  document.getElementById('tuneRoughnessBase').value = m.roughnessBase;
-  document.getElementById('tuneRoughnessBaseVal').textContent = m.roughnessBase.toFixed(2);
-  document.getElementById('tuneRoughnessContrast').value = m.roughnessContrast;
-  document.getElementById('tuneRoughnessContrastVal').textContent = m.roughnessContrast.toFixed(2);
-  document.getElementById('tuneRoughnessInvert').checked = m.roughnessInvert;
-  document.getElementById('tuneMetallic').value = m.metallic;
-  document.getElementById('tuneMetallicVal').textContent = m.metallic.toFixed(2);
-  document.getElementById('tuneSpecular').value = m.specular;
-  document.getElementById('tuneSpecularVal').textContent = m.specular.toFixed(2);
-  document.getElementById('tuneTileScale').value = m.tileScale;
-  document.getElementById('tuneTileScaleVal').textContent = m.tileScale.toFixed(1) + '×';
-  document.getElementById('tuneTileRot').value = m.tileRot;
-  document.getElementById('tuneTileRotVal').textContent = m.tileRot + '°';
-  document.getElementById('tuneSheenEnabled').checked = m.sheenEnabled;
-  document.getElementById('tuneSheen').disabled = !m.sheenEnabled;
-  document.getElementById('tuneSheen').value = m.sheen;
-  document.getElementById('tuneSheenVal').textContent = m.sheen.toFixed(2);
-}
-
-document.getElementById('tunePrev').addEventListener('click', () => {
-  state.tuneIndex = (state.tuneIndex - 1 + state.materials.length) % state.materials.length;
-  updateTuneUI();
-  rebuildMaterialMaps();
-  applyMaterialToPreview();
-});
-document.getElementById('tuneNext').addEventListener('click', () => {
-  state.tuneIndex = (state.tuneIndex + 1) % state.materials.length;
-  updateTuneUI();
-  rebuildMaterialMaps();
-  applyMaterialToPreview();
-});
-
-// Per-material slider hooks
-function bindTuneSlider(id, valId, prop, format, regenerate=true) {
-  const el = document.getElementById(id);
-  const valEl = document.getElementById(valId);
-  el.addEventListener('input', () => {
-    const m = getCurrentMaterial();
-    if (!m) return;
-    const v = parseFloat(el.value);
-    m[prop] = v;
-    valEl.textContent = format(v);
-    if (regenerate) rebuildMaterialMaps();
-    applyMaterialToPreview();
-  });
-}
-bindTuneSlider('tuneNormalStrength', 'tuneNormalStrengthVal', 'normalStrength', v => v.toFixed(1));
-bindTuneSlider('tuneRoughnessBase', 'tuneRoughnessBaseVal', 'roughnessBase', v => v.toFixed(2));
-bindTuneSlider('tuneRoughnessContrast', 'tuneRoughnessContrastVal', 'roughnessContrast', v => v.toFixed(2));
-bindTuneSlider('tuneMetallic', 'tuneMetallicVal', 'metallic', v => v.toFixed(2), false);
-bindTuneSlider('tuneSpecular', 'tuneSpecularVal', 'specular', v => v.toFixed(2), false);
-bindTuneSlider('tuneTileScale', 'tuneTileScaleVal', 'tileScale', v => v.toFixed(1) + '×', false);
-bindTuneSlider('tuneTileRot', 'tuneTileRotVal', 'tileRot', v => Math.round(v) + '°', false);
-bindTuneSlider('tuneSheen', 'tuneSheenVal', 'sheen', v => v.toFixed(2), false);
-
-document.getElementById('tuneRoughnessInvert').addEventListener('change', e => {
-  const m = getCurrentMaterial();
-  if (m) { m.roughnessInvert = e.target.checked; rebuildMaterialMaps(); applyMaterialToPreview(); }
-});
-document.getElementById('tuneSheenEnabled').addEventListener('change', e => {
-  const m = getCurrentMaterial();
-  if (m) {
-    m.sheenEnabled = e.target.checked;
-    document.getElementById('tuneSheen').disabled = !m.sheenEnabled;
-    applyMaterialToPreview();
-  }
-});
-
-document.getElementById('advancedToggle').addEventListener('click', () => {
-  document.getElementById('advancedSection').classList.toggle('collapsed');
-});
-
-// Tab switching
-document.querySelectorAll('.preview-tab').forEach(t => {
-  t.addEventListener('click', () => {
-    document.querySelectorAll('.preview-tab').forEach(tt => tt.classList.remove('active'));
-    t.classList.add('active');
-    state.tuneView = t.dataset.view;
-    applyMaterialToPreview();
-  });
-});
-
-// =========================================================================
-// MAP GENERATION (per-material, used in tune step and final composite)
-// =========================================================================
-
-// Sobel-based normal from grayscale of albedo (Disney-compatible: OpenGL Y+)
-function generateNormalFromImage(img, strength) {
-  if (!img) return null;
-  const w = img.width, h = img.height;
+function generateNormalFromImage(source, strength) {
+  if (!source) return null;
+  const w = source.width, h = source.height;
   const src = document.createElement('canvas');
   src.width = w; src.height = h;
-  const sctx = src.getContext('2d');
-  sctx.drawImage(img, 0, 0);
-  const data = sctx.getImageData(0, 0, w, h).data;
+  src.getContext('2d').drawImage(source, 0, 0);
+  const data = src.getContext('2d').getImageData(0, 0, w, h).data;
   const gray = new Float32Array(w * h);
   for (let i = 0; i < w * h; i++) {
     gray[i] = (data[i*4] * 0.299 + data[i*4+1] * 0.587 + data[i*4+2] * 0.114) / 255;
@@ -1688,24 +1567,20 @@ function generateNormalFromImage(img, strength) {
   return out;
 }
 
-// Roughness derived from albedo using local-variance heuristic + base & contrast
-// Per Disney/Burley: high-frequency variation correlates with roughness; uniform = smooth
-function generateRoughnessFromImage(img, base, contrast, invert) {
-  if (!img) {
+function generateRoughnessFromImage(source, base, contrast, invert) {
+  if (!source) {
     const out = document.createElement('canvas');
     out.width = 256; out.height = 256;
-    const ctx = out.getContext('2d');
     const v = Math.round(base * 255);
-    ctx.fillStyle = `rgb(${v},${v},${v})`;
-    ctx.fillRect(0, 0, 256, 256);
+    out.getContext('2d').fillStyle = `rgb(${v},${v},${v})`;
+    out.getContext('2d').fillRect(0, 0, 256, 256);
     return out;
   }
-  const w = img.width, h = img.height;
+  const w = source.width, h = source.height;
   const src = document.createElement('canvas');
   src.width = w; src.height = h;
-  const sctx = src.getContext('2d');
-  sctx.drawImage(img, 0, 0);
-  const data = sctx.getImageData(0, 0, w, h).data;
+  src.getContext('2d').drawImage(source, 0, 0);
+  const data = src.getContext('2d').getImageData(0, 0, w, h).data;
   const out = document.createElement('canvas');
   out.width = w; out.height = h;
   const octx = out.getContext('2d');
@@ -1718,56 +1593,55 @@ function generateRoughnessFromImage(img, base, contrast, invert) {
     v = base + (v - 0.5) * 0.5;
     v = Math.max(0, Math.min(1, v));
     const b = Math.round(v * 255);
-    outData.data[i*4] = b;
-    outData.data[i*4+1] = b;
-    outData.data[i*4+2] = b;
-    outData.data[i*4+3] = 255;
+    outData.data[i*4] = b; outData.data[i*4+1] = b; outData.data[i*4+2] = b; outData.data[i*4+3] = 255;
   }
   octx.putImageData(outData, 0, 0);
   return out;
 }
 
-// AO map from albedo (cavity-from-luminance) using GTAO-inspired idea:
-// darker recessed areas in albedo correspond to more occlusion. Cheap & useful.
-function generateAOFromImage(img) {
-  if (!img) {
+function generateAOFromImage(source) {
+  if (!source) {
     const out = document.createElement('canvas');
     out.width = 256; out.height = 256;
-    const ctx = out.getContext('2d');
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, 256, 256);
+    out.getContext('2d').fillStyle = '#ffffff';
+    out.getContext('2d').fillRect(0, 0, 256, 256);
     return out;
   }
-  const w = img.width, h = img.height;
+  const w = source.width, h = source.height;
   const src = document.createElement('canvas');
   src.width = w; src.height = h;
-  const sctx = src.getContext('2d');
-  sctx.drawImage(img, 0, 0);
-  const data = sctx.getImageData(0, 0, w, h).data;
-  // Compute luminance then blurred luminance for cavity ratio
+  src.getContext('2d').drawImage(source, 0, 0);
+  const data = src.getContext('2d').getImageData(0, 0, w, h).data;
   const gray = new Float32Array(w * h);
   for (let i = 0; i < w * h; i++) {
     gray[i] = (data[i*4] * 0.299 + data[i*4+1] * 0.587 + data[i*4+2] * 0.114) / 255;
   }
-  // Cheap box blur (radius 3)
+  // Separable box blur for speed (much faster than 2D)
+  const tmp = new Float32Array(w * h);
   const blurred = new Float32Array(w * h);
   const R = 3;
-  const gAt = (x, y) => {
-    x = Math.max(0, Math.min(w - 1, x));
-    y = Math.max(0, Math.min(h - 1, y));
-    return gray[y * w + x];
-  };
+  // Horizontal
   for (let y = 0; y < h; y++) {
     for (let x = 0; x < w; x++) {
       let sum = 0, cnt = 0;
-      for (let yy = -R; yy <= R; yy++)
-        for (let xx = -R; xx <= R; xx++) {
-          sum += gAt(x+xx, y+yy); cnt++;
-        }
+      for (let xx = -R; xx <= R; xx++) {
+        const xi = Math.max(0, Math.min(w-1, x+xx));
+        sum += gray[y * w + xi]; cnt++;
+      }
+      tmp[y * w + x] = sum / cnt;
+    }
+  }
+  // Vertical
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      let sum = 0, cnt = 0;
+      for (let yy = -R; yy <= R; yy++) {
+        const yi = Math.max(0, Math.min(h-1, y+yy));
+        sum += tmp[yi * w + x]; cnt++;
+      }
       blurred[y * w + x] = sum / cnt;
     }
   }
-  // AO = ratio between pixel and blurred, biased to keep mostly white
   const out = document.createElement('canvas');
   out.width = w; out.height = h;
   const octx = out.getContext('2d');
@@ -1776,82 +1650,282 @@ function generateAOFromImage(img) {
     let ao = gray[i] / Math.max(0.05, blurred[i]);
     ao = Math.max(0, Math.min(1, ao * 0.7 + 0.3));
     const b = Math.round(ao * 255);
-    outData.data[i*4] = b;
-    outData.data[i*4+1] = b;
-    outData.data[i*4+2] = b;
-    outData.data[i*4+3] = 255;
+    outData.data[i*4] = b; outData.data[i*4+1] = b; outData.data[i*4+2] = b; outData.data[i*4+3] = 255;
   }
   octx.putImageData(outData, 0, 0);
   return out;
 }
 
-// Rebuild cached map textures for current material
-function rebuildMaterialMaps() {
+// =========================================================================
+// STEP 6: TUNE (3D Preview with optimized updates)
+// =========================================================================
+let threeScene, threeCamera, threeRenderer, threeMesh, threeMaterial;
+const threeMaps = {};  // { materialId: { albedoTex, normalTex, roughnessTex, aoTex } }
+const threeCanvases = {};  // { materialId: { albedoCanvas, normalCanvas, roughnessCanvas, aoCanvas } }
+let threeRotation = { x: 0.4, y: 0.6 };
+let threeZoom = 3;
+let threeDrag = null;
+let threeAnimating = true;
+let threeAnimFrame = null;
+
+function initThreeScene() {
+  const canvas = document.getElementById('previewCanvas');
+  if (threeRenderer) {
+    threeRenderer.dispose();
+    threeRenderer = null;
+  }
+  threeRenderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
+  const rect = canvas.parentElement.getBoundingClientRect();
+  threeRenderer.setSize(rect.width, rect.height, false);
+  threeRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  threeRenderer.outputColorSpace = THREE.SRGBColorSpace;
+
+  threeScene = new THREE.Scene();
+  threeScene.background = new THREE.Color(0x000000);
+
+  threeCamera = new THREE.PerspectiveCamera(35, rect.width / rect.height, 0.1, 100);
+  threeCamera.position.set(0, 0, threeZoom);
+
+  const key = new THREE.DirectionalLight(0xffffff, 2.0);
+  key.position.set(2, 2, 2);
+  threeScene.add(key);
+  const fill = new THREE.DirectionalLight(0xffffff, 0.4);
+  fill.position.set(-2, -1, 2);
+  threeScene.add(fill);
+  threeScene.add(new THREE.AmbientLight(0xffffff, 0.15));
+
+  const geo = new THREE.BoxGeometry(1, 1, 1);
+  threeMaterial = new THREE.MeshPhysicalMaterial({
+    color: 0x888888, roughness: 0.5, metalness: 0.0,
+  });
+  threeMesh = new THREE.Mesh(geo, threeMaterial);
+  threeScene.add(threeMesh);
+
+  if (threeAnimFrame) cancelAnimationFrame(threeAnimFrame);
+  animateThree();
+}
+
+function bindPreviewInteraction() {
+  const canvas = document.getElementById('previewCanvas');
+  // Remove old listeners by cloning
+  const newCanvas = canvas.cloneNode(true);
+  canvas.parentNode.replaceChild(newCanvas, canvas);
+
+  newCanvas.addEventListener('mousedown', e => {
+    threeDrag = { x: e.clientX, y: e.clientY, rx: threeRotation.x, ry: threeRotation.y };
+    threeAnimating = false;
+    e.preventDefault();
+  });
+  window.addEventListener('mousemove', e => {
+    if (!threeDrag) return;
+    const dx = (e.clientX - threeDrag.x) * 0.01;
+    const dy = (e.clientY - threeDrag.y) * 0.01;
+    threeRotation.y = threeDrag.ry + dx;
+    threeRotation.x = threeDrag.rx + dy;
+  });
+  window.addEventListener('mouseup', () => { threeDrag = null; });
+  newCanvas.addEventListener('wheel', e => {
+    e.preventDefault();
+    threeZoom = Math.max(1.5, Math.min(8, threeZoom + e.deltaY * 0.002));
+  }, { passive: false });
+  newCanvas.addEventListener('dblclick', () => {
+    threeRotation = { x: 0.4, y: 0.6 };
+    threeZoom = 3;
+    threeAnimating = true;
+  });
+}
+
+function animateThree() {
+  if (!threeRenderer || state.step !== 6) {
+    threeAnimFrame = null;
+    return;
+  }
+  if (threeAnimating && !threeDrag) {
+    threeRotation.y += 0.005;
+  }
+  threeMesh.rotation.x = threeRotation.x;
+  threeMesh.rotation.y = threeRotation.y;
+  threeCamera.position.z = threeZoom;
+  threeRenderer.render(threeScene, threeCamera);
+  threeAnimFrame = requestAnimationFrame(animateThree);
+}
+
+function getCurrentMaterial() { return state.materials[state.tuneIndex]; }
+
+async function initTuneStep() {
+  initThreeScene();
+  // Re-bind interaction because we re-grab the canvas in initThreeScene
+  bindPreviewInteraction();
+  state.tuneIndex = 0;
+  state.tuneView = 'rendered';
+  // Clear stale caches
+  for (const k in threeCanvases) delete threeCanvases[k];
+  for (const k in threeMaps) delete threeMaps[k];
+  updateTuneUI();
+  await rebuildMaterialMaps('all');
+  applyMaterialToPreview('all');
+}
+
+function updateTuneUI() {
   const m = getCurrentMaterial();
   if (!m) return;
-  threeMaps[m.id] = threeMaps[m.id] || {};
-  if (m.albedo) {
-    threeMaps[m.id].albedoCanvas = m.albedo;
-    threeMaps[m.id].normalCanvas = generateNormalFromImage(m.albedo, m.normalStrength);
-    threeMaps[m.id].roughnessCanvas = generateRoughnessFromImage(m.albedo, m.roughnessBase, m.roughnessContrast, m.roughnessInvert);
-    threeMaps[m.id].aoCanvas = generateAOFromImage(m.albedo);
-  } else {
-    threeMaps[m.id] = null;
+  document.getElementById('tuneMatSwatch').style.background = m.color;
+  document.getElementById('tuneMatName').textContent = m.name;
+  document.getElementById('tuneMatCounter').textContent = `${state.tuneIndex + 1} / ${state.materials.length}`;
+  document.getElementById('tuneNormalStrength').value = m.normalStrength;
+  document.getElementById('tuneNormalStrengthVal').textContent = m.normalStrength.toFixed(1);
+  document.getElementById('tuneRoughnessBase').value = m.roughnessBase;
+  document.getElementById('tuneRoughnessBaseVal').textContent = m.roughnessBase.toFixed(2);
+  document.getElementById('tuneRoughnessContrast').value = m.roughnessContrast;
+  document.getElementById('tuneRoughnessContrastVal').textContent = m.roughnessContrast.toFixed(2);
+  document.getElementById('tuneRoughnessInvert').checked = m.roughnessInvert;
+  document.getElementById('tuneMetallic').value = m.metallic;
+  document.getElementById('tuneMetallicVal').textContent = m.metallic.toFixed(2);
+  document.getElementById('tuneSpecular').value = m.specular;
+  document.getElementById('tuneSpecularVal').textContent = m.specular.toFixed(2);
+  document.getElementById('tuneTileScale').value = m.tileScale;
+  document.getElementById('tuneTileScaleVal').textContent = m.tileScale.toFixed(1) + '×';
+  document.getElementById('tuneTileRot').value = m.tileRot;
+  document.getElementById('tuneTileRotVal').textContent = m.tileRot + '°';
+  document.getElementById('tuneSheenEnabled').checked = m.sheenEnabled;
+  document.getElementById('tuneSheen').disabled = !m.sheenEnabled;
+  document.getElementById('tuneSheen').value = m.sheen;
+  document.getElementById('tuneSheenVal').textContent = m.sheen.toFixed(2);
+}
+
+document.getElementById('tunePrev').addEventListener('click', async () => {
+  state.tuneIndex = (state.tuneIndex - 1 + state.materials.length) % state.materials.length;
+  updateTuneUI();
+  await rebuildMaterialMaps('all');
+  applyMaterialToPreview('all');
+});
+document.getElementById('tuneNext').addEventListener('click', async () => {
+  state.tuneIndex = (state.tuneIndex + 1) % state.materials.length;
+  updateTuneUI();
+  await rebuildMaterialMaps('all');
+  applyMaterialToPreview('all');
+});
+
+// ---- THE PERFORMANCE FIX ----
+// Selectively regenerate ONLY what changed; debounce expensive ops.
+// 'target' can be: 'all', 'normal', 'roughness', 'ao', or null (no map regen, just apply)
+async function rebuildMaterialMaps(target) {
+  const m = getCurrentMaterial();
+  if (!m) return;
+  threeCanvases[m.id] = threeCanvases[m.id] || {};
+  const cache = threeCanvases[m.id];
+  const source = m.albedo ? getPreviewAlbedo(m) : null;
+
+  if (target === 'all') {
+    cache.albedoCanvas = m.albedo || null;
+    cache.normalCanvas = generateNormalFromImage(source, m.normalStrength);
+    cache.roughnessCanvas = generateRoughnessFromImage(source, m.roughnessBase, m.roughnessContrast, m.roughnessInvert);
+    cache.aoCanvas = generateAOFromImage(source);
+  } else if (target === 'normal') {
+    cache.normalCanvas = generateNormalFromImage(source, m.normalStrength);
+  } else if (target === 'roughness') {
+    cache.roughnessCanvas = generateRoughnessFromImage(source, m.roughnessBase, m.roughnessContrast, m.roughnessInvert);
+  } else if (target === 'ao') {
+    cache.aoCanvas = generateAOFromImage(source);
   }
 }
 
-// Apply current material maps to the preview cube, switching based on view tab
-function applyMaterialToPreview() {
+// Create or update three.js texture from a canvas
+function makeTexFromCanvas(canvas, isLinear = false) {
+  if (!canvas) return null;
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.wrapS = THREE.RepeatWrapping;
+  tex.wrapT = THREE.RepeatWrapping;
+  tex.colorSpace = isLinear ? THREE.NoColorSpace : THREE.SRGBColorSpace;
+  return tex;
+}
+
+// Apply textures + scalars to the three.js material.
+// `level` controls what gets rebuilt:
+//   'all': dispose old textures, build fresh from canvas cache, set all scalars
+//   'normal'/'roughness'/'ao': swap that texture only
+//   'tiles': only update repeat/rotation on existing textures
+//   'scalars': only update metalness/ior/sheen
+function applyMaterialToPreview(level = 'all') {
   const m = getCurrentMaterial();
   if (!m || !threeMaterial) return;
-  const maps = threeMaps[m.id];
+  const cache = threeCanvases[m.id] || {};
+  const view = state.tuneView;
 
-  const makeTex = (img) => {
-    if (!img) return null;
-    const tex = new THREE.CanvasTexture(img);
-    tex.wrapS = THREE.RepeatWrapping;
-    tex.wrapT = THREE.RepeatWrapping;
-    tex.repeat.set(m.tileScale, m.tileScale);
-    tex.rotation = m.tileRot * Math.PI / 180;
-    tex.center.set(0.5, 0.5);
-    tex.colorSpace = THREE.SRGBColorSpace;
-    return tex;
-  };
-  const makeLinearTex = (img) => {
-    const tex = makeTex(img);
-    if (tex) tex.colorSpace = THREE.NoColorSpace;
-    return tex;
-  };
+  if (level === 'tiles') {
+    // Fast: just update texture repeat/rotation
+    [threeMaterial.map, threeMaterial.normalMap, threeMaterial.roughnessMap, threeMaterial.aoMap].forEach(tex => {
+      if (!tex) return;
+      tex.repeat.set(m.tileScale, m.tileScale);
+      tex.rotation = m.tileRot * Math.PI / 180;
+      tex.center.set(0.5, 0.5);
+      tex.needsUpdate = true;
+    });
+    return;
+  }
 
-  // Reset
-  threeMaterial.map = null;
-  threeMaterial.normalMap = null;
-  threeMaterial.roughnessMap = null;
-  threeMaterial.metalnessMap = null;
-  threeMaterial.aoMap = null;
+  if (level === 'scalars') {
+    // Fast: just update material scalars
+    threeMaterial.metalness = m.metallic;
+    threeMaterial.ior = 1.0 + m.specular * 0.8;
+    threeMaterial.sheen = m.sheenEnabled ? m.sheen : 0;
+    if (m.sheenEnabled) {
+      threeMaterial.sheenColor = new THREE.Color(0xffffff);
+      threeMaterial.sheenRoughness = 0.5;
+    }
+    threeMaterial.needsUpdate = true;
+    return;
+  }
+
+  // For 'normal', 'roughness', 'ao': replace only that texture in the cache
+  if (level === 'normal' || level === 'roughness' || level === 'ao') {
+    // We still need to re-apply because the rendered view shows all maps
+    // Just swap the relevant texture
+    const mapName = level === 'normal' ? 'normalMap' : level === 'roughness' ? 'roughnessMap' : 'aoMap';
+    const canvasKey = level === 'normal' ? 'normalCanvas' : level === 'roughness' ? 'roughnessCanvas' : 'aoCanvas';
+    if (threeMaterial[mapName]) threeMaterial[mapName].dispose();
+    if (view === 'rendered' || view === level) {
+      threeMaterial[mapName] = makeTexFromCanvas(cache[canvasKey], true);
+      if (threeMaterial[mapName]) {
+        threeMaterial[mapName].repeat.set(m.tileScale, m.tileScale);
+        threeMaterial[mapName].rotation = m.tileRot * Math.PI / 180;
+        threeMaterial[mapName].center.set(0.5, 0.5);
+      }
+    }
+    threeMaterial.needsUpdate = true;
+    return;
+  }
+
+  // level === 'all': full rebuild
+  // Dispose existing textures to free GPU memory
+  ['map', 'normalMap', 'roughnessMap', 'metalnessMap', 'aoMap'].forEach(k => {
+    if (threeMaterial[k]) { threeMaterial[k].dispose(); threeMaterial[k] = null; }
+  });
   threeMaterial.color = new THREE.Color(0x888888);
-  threeMaterial.roughness = m.roughnessBase;
-  threeMaterial.metalness = m.metallic;
 
-  if (state.tuneView === 'rendered') {
-    if (maps && maps.albedoCanvas) {
-      threeMaterial.map = makeTex(maps.albedoCanvas);
-      threeMaterial.normalMap = makeLinearTex(maps.normalCanvas);
-      threeMaterial.roughnessMap = makeLinearTex(maps.roughnessCanvas);
+  const albedoTex = cache.albedoCanvas ? makeTexFromCanvas(cache.albedoCanvas, false) : null;
+  const normalTex = cache.normalCanvas ? makeTexFromCanvas(cache.normalCanvas, true) : null;
+  const roughTex  = cache.roughnessCanvas ? makeTexFromCanvas(cache.roughnessCanvas, true) : null;
+  const aoTex     = cache.aoCanvas ? makeTexFromCanvas(cache.aoCanvas, true) : null;
+  [albedoTex, normalTex, roughTex, aoTex].forEach(t => {
+    if (!t) return;
+    t.repeat.set(m.tileScale, m.tileScale);
+    t.rotation = m.tileRot * Math.PI / 180;
+    t.center.set(0.5, 0.5);
+  });
+
+  if (view === 'rendered') {
+    if (cache.albedoCanvas) {
+      threeMaterial.map = albedoTex;
+      threeMaterial.normalMap = normalTex;
+      threeMaterial.roughnessMap = roughTex;
       threeMaterial.color = new THREE.Color(0xffffff);
     } else {
       threeMaterial.color = new THREE.Color(m.color);
     }
     threeMaterial.roughness = m.roughnessBase;
     threeMaterial.metalness = m.metallic;
-    // Specular F0 (dielectric) — only meaningful when not metal
-    if (threeMaterial.metalness < 0.5) {
-      // Three.js uses ior, which we approximate from specular slider [0,1] -> IOR [1.0, 1.8]
-      threeMaterial.ior = 1.0 + m.specular * 0.8;
-    } else {
-      threeMaterial.ior = 1.5; // doesn't affect metals
-    }
-    // Sheen
+    threeMaterial.ior = 1.0 + m.specular * 0.8;
     if (m.sheenEnabled) {
       threeMaterial.sheen = m.sheen;
       threeMaterial.sheenColor = new THREE.Color(0xffffff);
@@ -1859,50 +1933,144 @@ function applyMaterialToPreview() {
     } else {
       threeMaterial.sheen = 0;
     }
-  } else if (state.tuneView === 'albedo') {
-    threeMaterial.map = maps ? makeTex(maps.albedoCanvas) : null;
-    threeMaterial.color = maps ? new THREE.Color(0xffffff) : new THREE.Color(m.color);
+  } else if (view === 'albedo') {
+    threeMaterial.map = albedoTex;
+    threeMaterial.color = albedoTex ? new THREE.Color(0xffffff) : new THREE.Color(m.color);
     threeMaterial.roughness = 1; threeMaterial.metalness = 0;
-  } else if (state.tuneView === 'normal') {
-    threeMaterial.map = maps && maps.normalCanvas ? makeTex(maps.normalCanvas) : null;
+  } else if (view === 'normal') {
+    threeMaterial.map = normalTex || albedoTex;  // show normal as flat texture
     threeMaterial.color = new THREE.Color(0xffffff);
     threeMaterial.roughness = 1; threeMaterial.metalness = 0;
-  } else if (state.tuneView === 'roughness') {
-    threeMaterial.map = maps && maps.roughnessCanvas ? makeTex(maps.roughnessCanvas) : null;
+  } else if (view === 'roughness') {
+    threeMaterial.map = roughTex;
     threeMaterial.color = new THREE.Color(0xffffff);
     threeMaterial.roughness = 1; threeMaterial.metalness = 0;
-  } else if (state.tuneView === 'metallic') {
+  } else if (view === 'metallic') {
     threeMaterial.color = new THREE.Color(m.metallic, m.metallic, m.metallic);
     threeMaterial.roughness = 1; threeMaterial.metalness = 0;
   }
   threeMaterial.needsUpdate = true;
 }
 
+// Debounce helper for expensive map regenerations
+function debounce(fn, delay) {
+  let timer = null;
+  return (...args) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn(...args), delay);
+  };
+}
+
+const debouncedRegen = {
+  normal: debounce(async () => {
+    await rebuildMaterialMaps('normal');
+    applyMaterialToPreview('normal');
+  }, 200),
+  roughness: debounce(async () => {
+    await rebuildMaterialMaps('roughness');
+    applyMaterialToPreview('roughness');
+  }, 200),
+};
+
+// ---- Slider binders with the right update strategy per slider ----
+// Type:
+//   'regenNormal' = regenerate normal map (debounced)
+//   'regenRough' = regenerate roughness map (debounced)
+//   'scalar' = only update three.js material scalar (instant)
+//   'tiles' = only update texture transforms (instant)
+function bindTuneSlider(id, valId, prop, format, type) {
+  const el = document.getElementById(id);
+  const valEl = document.getElementById(valId);
+  el.addEventListener('input', () => {
+    const m = getCurrentMaterial();
+    if (!m) return;
+    const v = parseFloat(el.value);
+    m[prop] = v;
+    valEl.textContent = format(v);
+    if (type === 'regenNormal') {
+      debouncedRegen.normal();
+    } else if (type === 'regenRough') {
+      debouncedRegen.roughness();
+    } else if (type === 'scalar') {
+      // Update base roughness directly on three.js scalar for instant feedback
+      if (prop === 'roughnessBase' && state.tuneView === 'rendered') {
+        threeMaterial.roughness = v;
+      }
+      applyMaterialToPreview('scalars');
+    } else if (type === 'tiles') {
+      applyMaterialToPreview('tiles');
+    }
+  });
+}
+
+// Critical perf decision: 'roughnessBase' is the three.js scalar (instant),
+// 'roughnessContrast' and 'roughnessInvert' affect the GENERATED map (debounced).
+bindTuneSlider('tuneNormalStrength', 'tuneNormalStrengthVal', 'normalStrength', v => v.toFixed(1), 'regenNormal');
+bindTuneSlider('tuneRoughnessBase', 'tuneRoughnessBaseVal', 'roughnessBase', v => v.toFixed(2), 'scalar');
+bindTuneSlider('tuneRoughnessContrast', 'tuneRoughnessContrastVal', 'roughnessContrast', v => v.toFixed(2), 'regenRough');
+bindTuneSlider('tuneMetallic', 'tuneMetallicVal', 'metallic', v => v.toFixed(2), 'scalar');
+bindTuneSlider('tuneSpecular', 'tuneSpecularVal', 'specular', v => v.toFixed(2), 'scalar');
+bindTuneSlider('tuneTileScale', 'tuneTileScaleVal', 'tileScale', v => v.toFixed(1) + '×', 'tiles');
+bindTuneSlider('tuneTileRot', 'tuneTileRotVal', 'tileRot', v => Math.round(v) + '°', 'tiles');
+bindTuneSlider('tuneSheen', 'tuneSheenVal', 'sheen', v => v.toFixed(2), 'scalar');
+
+document.getElementById('tuneRoughnessInvert').addEventListener('change', e => {
+  const m = getCurrentMaterial();
+  if (m) {
+    m.roughnessInvert = e.target.checked;
+    debouncedRegen.roughness();
+  }
+});
+document.getElementById('tuneSheenEnabled').addEventListener('change', e => {
+  const m = getCurrentMaterial();
+  if (m) {
+    m.sheenEnabled = e.target.checked;
+    document.getElementById('tuneSheen').disabled = !m.sheenEnabled;
+    applyMaterialToPreview('scalars');
+  }
+});
+
+document.getElementById('advancedToggle').addEventListener('click', () => {
+  document.getElementById('advancedSection').classList.toggle('collapsed');
+});
+
+// Tab switching — needs full rebuild because view changes which texture maps to material.map
+document.querySelectorAll('.preview-tab').forEach(t => {
+  t.addEventListener('click', () => {
+    document.querySelectorAll('.preview-tab').forEach(tt => tt.classList.remove('active'));
+    t.classList.add('active');
+    state.tuneView = t.dataset.view;
+    applyMaterialToPreview('all');
+  });
+});
+
 // =========================================================================
-// STEP 7: FINAL COMPOSITE & EXPORT
+// STEP 7: FINAL EXPORT (full resolution)
 // =========================================================================
-function generateFinalMaps() {
+async function generateFinalMaps() {
+  busy(true);
+  await new Promise(r => setTimeout(r, 50));  // Let UI update
+
   const size = state.exportRes;
   document.getElementById('exportSize').textContent = size + ' × ' + size;
-
-  // Scale shapes from UV coords (uvW/uvH) to output coords (size/size)
   const sx = size / state.uvW;
   const sy = size / state.uvH;
 
-  // Pre-generate per-material maps
+  // Generate full-res maps per material
   const matMaps = {};
-  state.materials.forEach(m => {
+  for (const m of state.materials) {
     matMaps[m.id] = {
       normal: m.albedo ? generateNormalFromImage(m.albedo, m.normalStrength) : null,
       roughness: generateRoughnessFromImage(m.albedo, m.roughnessBase, m.roughnessContrast, m.roughnessInvert),
       ao: m.albedo ? generateAOFromImage(m.albedo) : null,
     };
-  });
+    // Yield to UI
+    await new Promise(r => setTimeout(r, 0));
+  }
 
-  // ALBEDO
   const albedo = compositeMap(size, sx, sy, (ctx, s, m) => {
     if (m.albedo) {
-      const pat = createTransformedPattern(ctx, m.albedo, m.tileScale, m.tileRot, size);
+      const pat = createTransformedPattern(ctx, m.albedo, m.tileScale, m.tileRot);
       ctx.fillStyle = pat;
     } else {
       ctx.fillStyle = m.color;
@@ -1910,11 +2078,10 @@ function generateFinalMaps() {
     ctx.fillRect(0, 0, size, size);
   }, '#000000');
 
-  // NORMAL
   const normal = compositeMap(size, sx, sy, (ctx, s, m) => {
     const n = matMaps[m.id].normal;
     if (n) {
-      const pat = createTransformedPattern(ctx, n, m.tileScale, m.tileRot, size);
+      const pat = createTransformedPattern(ctx, n, m.tileScale, m.tileRot);
       ctx.fillStyle = pat;
       ctx.fillRect(0, 0, size, size);
     } else {
@@ -1923,32 +2090,23 @@ function generateFinalMaps() {
     }
   }, 'rgb(128,128,255)');
 
-  // ROUGHNESS
   const roughness = compositeMap(size, sx, sy, (ctx, s, m) => {
     const r = matMaps[m.id].roughness;
-    if (r) {
-      const pat = createTransformedPattern(ctx, r, m.tileScale, m.tileRot, size);
-      ctx.fillStyle = pat;
-      ctx.fillRect(0, 0, size, size);
-    } else {
-      const v = Math.round(m.roughnessBase * 255);
-      ctx.fillStyle = `rgb(${v},${v},${v})`;
-      ctx.fillRect(0, 0, size, size);
-    }
+    const pat = createTransformedPattern(ctx, r, m.tileScale, m.tileRot);
+    ctx.fillStyle = pat;
+    ctx.fillRect(0, 0, size, size);
   }, 'rgb(128,128,128)');
 
-  // METALLIC (flat per material)
   const metallic = compositeMap(size, sx, sy, (ctx, s, m) => {
     const v = Math.round(m.metallic * 255);
     ctx.fillStyle = `rgb(${v},${v},${v})`;
     ctx.fillRect(0, 0, size, size);
   }, '#000000');
 
-  // AO
   const ao = compositeMap(size, sx, sy, (ctx, s, m) => {
     const a = matMaps[m.id].ao;
     if (a) {
-      const pat = createTransformedPattern(ctx, a, m.tileScale, m.tileRot, size);
+      const pat = createTransformedPattern(ctx, a, m.tileScale, m.tileRot);
       ctx.fillStyle = pat;
       ctx.fillRect(0, 0, size, size);
     } else {
@@ -1957,7 +2115,6 @@ function generateFinalMaps() {
     }
   }, '#ffffff');
 
-  // SPECULAR (dielectric F0) — flat per material, only meaningful for non-metals
   const specular = compositeMap(size, sx, sy, (ctx, s, m) => {
     const v = Math.round(m.specular * 255);
     ctx.fillStyle = `rgb(${v},${v},${v})`;
@@ -1971,7 +2128,6 @@ function generateFinalMaps() {
   state.outputAO = ao;
   state.outputSpecular = specular;
 
-  // Display
   const grid = document.getElementById('mapsGrid');
   grid.innerHTML = '';
   const maps = [
@@ -1995,6 +2151,8 @@ function generateFinalMaps() {
     card.querySelector('button').addEventListener('click', () => downloadCanvas(m.canvas, m.filename));
     grid.appendChild(card);
   });
+
+  busy(false);
 }
 
 function compositeMap(size, sx, sy, perShapeFn, bgFillStyle) {
@@ -2018,19 +2176,15 @@ function compositeMap(size, sx, sy, perShapeFn, bgFillStyle) {
   return c;
 }
 
-function createTransformedPattern(targetCtx, sourceCanvas, scale, rotDeg, outputSize) {
-  // Build a tiled+rotated pattern with the requested scale
-  // Pattern transforms aren't well supported across browsers, so pre-bake a tile canvas at proper size
+function createTransformedPattern(targetCtx, sourceCanvas, scale, rotDeg) {
   const tile = document.createElement('canvas');
   const tileSize = Math.max(64, Math.min(2048, Math.round(sourceCanvas.width * scale)));
   tile.width = tileSize; tile.height = tileSize;
   const tctx = tile.getContext('2d');
-  // Rotate if needed
   if (rotDeg !== 0) {
     tctx.save();
     tctx.translate(tileSize / 2, tileSize / 2);
     tctx.rotate(rotDeg * Math.PI / 180);
-    // Slightly oversize to cover corners after rotation
     const draw = tileSize * 1.5;
     tctx.drawImage(sourceCanvas, -draw/2, -draw/2, draw, draw);
     tctx.restore();
@@ -2061,23 +2215,6 @@ document.getElementById('downloadAll').addEventListener('click', () => {
   ];
   maps.forEach((m, i) => setTimeout(() => downloadCanvas(m.c, m.n), i * 250));
   toast('Downloading 6 maps…');
-});
-
-// =========================================================================
-// CROP APPLY ON NAVIGATION
-// =========================================================================
-const _origSetStep = setStep;
-window.setStep = function(n) {
-  if (state.step === 2 && n > 2) {
-    applyCrop();
-  }
-  _origSetStep(n);
-};
-// Re-bind nav buttons to use wrapped version
-document.getElementById('nextBtn').onclick = () => window.setStep(state.step + 1);
-document.getElementById('prevBtn').onclick = () => window.setStep(state.step - 1);
-document.querySelectorAll('.step').forEach(s => {
-  s.onclick = () => window.setStep(parseInt(s.dataset.step));
 });
 
 // =========================================================================
