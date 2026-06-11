@@ -57,36 +57,32 @@
     background: var(--accent);
     box-shadow: 0 0 12px var(--accent);
   }
-  .stepper { display: flex; align-items: center; gap: 4px; flex: 1; justify-content: center; }
+  .stepper { display: flex; align-items: center; gap: 2px; flex: 1; justify-content: center; }
   .step {
-    display: flex; align-items: center; gap: 8px;
-    padding: 6px 12px;
+    display: flex; align-items: center; gap: 6px;
+    padding: 6px 8px;
     color: var(--muted-2);
-    font-size: 11px;
-    text-transform: uppercase; letter-spacing: 0.08em;
+    font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.06em;
     cursor: pointer;
     transition: color 0.15s;
   }
   .step .num {
-    width: 18px; height: 18px;
+    width: 16px; height: 16px;
     border: 1px solid var(--border-light);
     display: flex; align-items: center; justify-content: center;
-    font-size: 10px;
+    font-size: 9px; flex-shrink: 0;
   }
   .step.active { color: var(--accent); }
   .step.active .num { border-color: var(--accent); background: var(--accent-glow); color: var(--accent); }
   .step.done { color: var(--text); }
   .step.done .num { border-color: var(--success); color: var(--success); }
   .step:hover { color: var(--text); }
-  .step-divider { width: 16px; height: 1px; background: var(--border); }
+  .step-divider { width: 10px; height: 1px; background: var(--border); flex-shrink: 0; }
 
   /* MAIN AREA */
-  main {
-    flex: 1; display: flex; overflow: hidden;
-  }
-  .stage {
-    flex: 1; display: none; overflow: hidden; position: relative;
-  }
+  main { flex: 1; display: flex; overflow: hidden; }
+  .stage { flex: 1; display: none; overflow: hidden; position: relative; }
   .stage.active { display: flex; }
 
   /* CENTER WORK AREA */
@@ -102,18 +98,50 @@
 
   /* SIDE PANEL */
   .panel {
-    width: 320px;
+    width: 300px;
     background: var(--panel);
     border-left: 1px solid var(--border);
     display: flex; flex-direction: column;
     overflow-y: auto;
   }
-  .panel-section { padding: 16px; border-bottom: 1px solid var(--border); }
+  .panel-section { padding: 14px; border-bottom: 1px solid var(--border); }
   .panel-section h3 {
     font-size: 10px; font-weight: 600;
     text-transform: uppercase; letter-spacing: 0.12em;
-    color: var(--muted); margin-bottom: 12px;
+    color: var(--muted); margin-bottom: 10px;
   }
+
+  /* QUALITY SELECTION */
+  .quality-options { display: flex; flex-direction: column; gap: 8px; width: 580px; max-width: 90vw; }
+  .quality-card {
+    display: flex; align-items: center; gap: 18px;
+    padding: 14px 18px;
+    border: 1px solid var(--border);
+    background: var(--panel);
+    cursor: pointer; transition: all 0.15s;
+  }
+  .quality-card:hover { border-color: var(--border-light); background: var(--panel-2); }
+  .quality-card.selected { border-color: var(--accent); background: var(--accent-glow); }
+  .quality-check {
+    width: 16px; height: 16px; flex-shrink: 0;
+    border: 1px solid var(--border-light);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; color: transparent;
+  }
+  .quality-card.selected .quality-check { border-color: var(--accent); background: var(--accent); color: #000; }
+  .quality-res {
+    font-size: 17px; font-weight: 700; min-width: 100px; white-space: nowrap;
+  }
+  .quality-res .x { font-size: 11px; color: var(--muted); font-weight: 400; }
+  .quality-card.selected .quality-res { color: var(--accent); }
+  .quality-tier {
+    font-size: 9px; font-weight: 700; letter-spacing: 0.14em;
+    text-transform: uppercase; padding: 3px 8px;
+    border: 1px solid var(--border-light); color: var(--muted);
+    white-space: nowrap; flex-shrink: 0;
+  }
+  .quality-card.selected .quality-tier { border-color: var(--accent); color: var(--accent); }
+  .quality-desc { font-size: 11px; color: var(--muted); flex: 1; }
 
   /* DROPZONE */
   .dropzone {
@@ -126,18 +154,30 @@
     transition: all 0.2s;
     background: var(--panel);
   }
-  .dropzone:hover, .dropzone.dragover {
-    border-color: var(--accent);
-    background: var(--accent-glow);
-  }
-  .dropzone-icon {
-    font-size: 32px; color: var(--muted);
-    line-height: 1;
-  }
+  .dropzone:hover, .dropzone.dragover { border-color: var(--accent); background: var(--accent-glow); }
+  .dropzone-icon { font-size: 32px; color: var(--muted); line-height: 1; }
   .dropzone:hover .dropzone-icon, .dropzone.dragover .dropzone-icon { color: var(--accent); }
   .dropzone-title { font-size: 14px; font-weight: 600; }
   .dropzone-hint { font-size: 11px; color: var(--muted); }
   input[type=file] { display: none; }
+
+  /* CROP STEP */
+  .crop-wrap { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+  .crop-canvas-frame {
+    border: 2px solid var(--accent);
+    box-shadow: 0 0 30px rgba(255,107,26,0.25);
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  #cropCanvas {
+    display: block;
+    cursor: grab;
+    width: 480px; height: 480px;
+  }
+  #cropCanvas.grabbing { cursor: grabbing; }
+  .crop-controls { display: flex; flex-direction: column; gap: 10px; width: 480px; max-width: 90vw; }
+  .crop-btn-row { display: flex; gap: 8px; align-items: center; }
+  .crop-hint { font-size: 11px; color: var(--muted); text-align: center; letter-spacing: 0.04em; }
 
   /* BUTTONS */
   button, .btn {
@@ -157,10 +197,7 @@
   }
   button.primary:hover { background: #ff8740; border-color: #ff8740; color: #0c0c0c; }
   button.danger:hover { border-color: var(--danger); color: var(--danger); }
-  button.icon {
-    width: 28px; height: 28px; padding: 0;
-    justify-content: center;
-  }
+  button.icon { width: 28px; height: 28px; padding: 0; justify-content: center; }
 
   .btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
   .footer-bar {
@@ -169,9 +206,7 @@
     display: flex; align-items: center; padding: 0 16px; gap: 8px;
   }
   .footer-bar .spacer { flex: 1; }
-  .footer-info {
-    font-size: 11px; color: var(--muted);
-  }
+  .footer-info { font-size: 11px; color: var(--muted); }
 
   /* MATERIALS LIST */
   .material-row {
@@ -180,9 +215,7 @@
     margin-bottom: 6px; background: var(--panel-2);
     cursor: pointer; transition: all 0.15s;
   }
-  .material-row.active {
-    border-color: var(--accent); background: var(--accent-glow);
-  }
+  .material-row.active { border-color: var(--accent); background: var(--accent-glow); }
   .material-row:hover { border-color: var(--border-light); }
   .material-row.active:hover { border-color: var(--accent); }
   .swatch {
@@ -197,34 +230,24 @@
     outline: none; padding: 4px 0;
   }
   .material-name:focus { color: var(--accent); }
-  .material-count {
-    font-size: 10px; color: var(--muted);
-    background: var(--bg); padding: 2px 6px;
-  }
+  .material-count { font-size: 10px; color: var(--muted); background: var(--bg); padding: 2px 6px; }
   .material-delete {
     width: 22px; height: 22px; padding: 0;
-    justify-content: center;
-    border: 1px solid transparent;
-    background: transparent;
+    justify-content: center; border: 1px solid transparent; background: transparent;
   }
   .material-delete:hover { border-color: var(--danger); color: var(--danger); }
 
   /* CANVAS */
   .canvas-wrap {
     position: relative; display: inline-block;
-    background: var(--panel);
-    border: 1px solid var(--border);
+    background: var(--panel); border: 1px solid var(--border);
     box-shadow: 0 0 60px rgba(0,0,0,0.5);
   }
-  #drawCanvas {
-    display: block; cursor: crosshair;
-    max-width: 75vw; max-height: 75vh;
-  }
+  #drawCanvas { display: block; cursor: crosshair; max-width: 75vw; max-height: 75vh; }
   .canvas-overlay {
     position: absolute; top: 8px; left: 8px;
     font-size: 10px; color: var(--muted);
-    background: rgba(0,0,0,0.6);
-    padding: 4px 8px;
+    background: rgba(0,0,0,0.6); padding: 4px 8px;
     pointer-events: none;
   }
 
@@ -260,14 +283,12 @@
   /* TOGGLE */
   .toggle {
     display: flex; align-items: center; gap: 8px;
-    font-size: 11px; cursor: pointer;
-    margin-bottom: 8px;
+    font-size: 11px; cursor: pointer; margin-bottom: 8px;
   }
   .toggle input { display: none; }
   .toggle-switch {
     width: 28px; height: 14px;
-    background: var(--panel-2);
-    border: 1px solid var(--border-light);
+    background: var(--panel-2); border: 1px solid var(--border-light);
     position: relative; transition: all 0.15s;
   }
   .toggle-switch::after {
@@ -275,75 +296,63 @@
     background: var(--muted); position: absolute;
     top: 2px; left: 2px; transition: all 0.15s;
   }
-  .toggle input:checked + .toggle-switch {
-    background: var(--accent-glow); border-color: var(--accent);
-  }
-  .toggle input:checked + .toggle-switch::after {
-    left: 16px; background: var(--accent);
-  }
+  .toggle input:checked + .toggle-switch { background: var(--accent-glow); border-color: var(--accent); }
+  .toggle input:checked + .toggle-switch::after { left: 16px; background: var(--accent); }
 
   /* ALBEDO UPLOAD */
-  .albedo-grid {
-    display: grid; gap: 12px;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  }
-  .albedo-card {
-    background: var(--panel); border: 1px solid var(--border);
-    padding: 12px;
-  }
-  .albedo-card-head {
-    display: flex; align-items: center; gap: 8px;
-    margin-bottom: 10px;
-  }
-  .albedo-card-head .name {
-    font-weight: 600; flex: 1; font-size: 12px;
-  }
+  .albedo-grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+  .albedo-card { background: var(--panel); border: 1px solid var(--border); padding: 12px; }
+  .albedo-card-head { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .albedo-card-head .name { font-weight: 600; flex: 1; font-size: 12px; }
   .albedo-slot {
     aspect-ratio: 1; border: 1px dashed var(--border-light);
     display: flex; align-items: center; justify-content: center;
-    cursor: pointer; position: relative;
-    background: var(--bg);
+    cursor: pointer; position: relative; background: var(--bg);
   }
   .albedo-slot:hover { border-color: var(--accent); }
   .albedo-slot.dragover { border-color: var(--accent); background: var(--accent-glow); }
-  .albedo-slot img {
-    position: absolute; inset: 0; width: 100%; height: 100%;
-    object-fit: cover;
-  }
+  .albedo-slot img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
   .albedo-slot .placeholder {
     color: var(--muted); font-size: 10px; text-align: center;
     text-transform: uppercase; letter-spacing: 0.08em;
   }
 
   /* MAP OUTPUT GRID */
-  .maps-grid {
-    display: grid; gap: 16px;
-    grid-template-columns: repeat(2, 1fr);
-    max-width: 900px; margin: 0 auto;
-  }
-  .map-card {
-    background: var(--panel); border: 1px solid var(--border);
-    overflow: hidden;
-  }
+  .maps-grid { display: grid; gap: 16px; grid-template-columns: repeat(2, 1fr); max-width: 900px; margin: 0 auto; }
+  .map-card { background: var(--panel); border: 1px solid var(--border); overflow: hidden; }
   .map-card-head {
     display: flex; align-items: center; padding: 10px 12px;
-    border-bottom: 1px solid var(--border);
-    background: var(--panel-2);
+    border-bottom: 1px solid var(--border); background: var(--panel-2);
   }
-  .map-card-head .label {
-    font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em;
-    flex: 1;
-  }
+  .map-card-head .label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; flex: 1; }
   .map-card-head .accent-label { color: var(--accent); }
   .map-card canvas, .map-card img {
     display: block; width: 100%; height: auto;
     background: repeating-conic-gradient(#1a1a1a 0% 25%, #222 0% 50%) 50% / 16px 16px;
   }
 
-  /* MESSAGES */
-  .empty-state {
-    text-align: center; color: var(--muted); padding: 40px;
+  /* PER-MATERIAL PROPERTY BLOCK */
+  .mat-props {
+    border: 1px solid var(--border); padding: 10px; margin-bottom: 8px;
+    background: var(--panel-2);
   }
+  .mat-props-head {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 8px; font-size: 11px; font-weight: 600;
+  }
+  .mat-props .field { margin-bottom: 8px; }
+  .mat-props .field:last-child { margin-bottom: 0; }
+  .shine-hint {
+    font-size: 10px; color: var(--accent);
+    border: 1px solid var(--accent-dim);
+    background: var(--accent-glow);
+    padding: 6px 8px; margin-top: 6px;
+    display: none;
+  }
+  .shine-hint.visible { display: block; }
+
+  /* MESSAGES */
+  .empty-state { text-align: center; color: var(--muted); padding: 40px; }
   .empty-state h2 { font-size: 14px; margin-bottom: 8px; color: var(--text); }
   .empty-state p { font-size: 11px; }
 
@@ -356,8 +365,7 @@
   /* TOOLBAR */
   .toolbar {
     display: flex; flex-direction: column; gap: 4px;
-    padding: 8px; background: var(--panel);
-    border-right: 1px solid var(--border);
+    padding: 8px; background: var(--panel); border-right: 1px solid var(--border);
   }
   .tool {
     width: 40px; height: 40px;
@@ -375,10 +383,16 @@
     background: var(--panel); border: 1px solid var(--accent);
     padding: 12px 20px; color: var(--accent);
     font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em;
-    z-index: 1000; opacity: 0; transition: opacity 0.2s;
-    pointer-events: none;
+    z-index: 1000; opacity: 0; transition: opacity 0.2s; pointer-events: none;
   }
   .toast.show { opacity: 1; }
+
+  /* Quality badge on export step */
+  .quality-badge {
+    font-size: 10px; padding: 3px 8px;
+    border: 1px solid var(--accent); color: var(--accent);
+    letter-spacing: 0.08em; text-transform: uppercase;
+  }
 </style>
 </head>
 <body>
@@ -386,23 +400,65 @@
   <header>
     <div class="logo">UV·PAINTER</div>
     <div class="stepper">
-      <div class="step active" data-step="1"><span class="num">1</span><span>UV Layout</span></div>
+      <div class="step active" data-step="1"><span class="num">1</span><span>Quality</span></div>
       <div class="step-divider"></div>
-      <div class="step" data-step="2"><span class="num">2</span><span>Materials</span></div>
+      <div class="step" data-step="2"><span class="num">2</span><span>UV</span></div>
       <div class="step-divider"></div>
-      <div class="step" data-step="3"><span class="num">3</span><span>Draw Masks</span></div>
+      <div class="step" data-step="3"><span class="num">3</span><span>Fit</span></div>
       <div class="step-divider"></div>
-      <div class="step" data-step="4"><span class="num">4</span><span>Albedos</span></div>
+      <div class="step" data-step="4"><span class="num">4</span><span>Materials</span></div>
       <div class="step-divider"></div>
-      <div class="step" data-step="5"><span class="num">5</span><span>Export</span></div>
+      <div class="step" data-step="5"><span class="num">5</span><span>Draw</span></div>
+      <div class="step-divider"></div>
+      <div class="step" data-step="6"><span class="num">6</span><span>Albedos</span></div>
+      <div class="step-divider"></div>
+      <div class="step" data-step="7"><span class="num">7</span><span>Export</span></div>
     </div>
     <button class="btn" id="resetAll">Reset</button>
   </header>
 
   <main>
 
-    <!-- STEP 1: UPLOAD UV -->
+    <!-- STEP 1: QUALITY -->
     <section class="stage active" data-stage="1">
+      <div class="work">
+        <div>
+          <h2 style="font-size:15px; font-weight:700; margin-bottom:6px;">Choose output quality</h2>
+          <p style="font-size:11px; color:var(--muted); margin-bottom:24px; letter-spacing:0.04em;">
+            Sets the resolution for all exported PBR maps. Match to how visible the object is in-game.
+          </p>
+          <div class="quality-options">
+            <div class="quality-card" data-res="2048" data-tier="HERO">
+              <div class="quality-check">✓</div>
+              <div class="quality-res">2048 <span class="x">× 2048</span></div>
+              <div class="quality-tier">HERO</div>
+              <div class="quality-desc">Held item, examined closely, main character</div>
+            </div>
+            <div class="quality-card" data-res="1024" data-tier="MIDGROUND">
+              <div class="quality-check">✓</div>
+              <div class="quality-res">1024 <span class="x">× 1024</span></div>
+              <div class="quality-tier">MIDGROUND</div>
+              <div class="quality-desc">Furniture, props you walk past but don't interact with</div>
+            </div>
+            <div class="quality-card" data-res="512" data-tier="BACKGROUND">
+              <div class="quality-check">✓</div>
+              <div class="quality-res">512 <span class="x">× 512</span></div>
+              <div class="quality-tier">BACKGROUND</div>
+              <div class="quality-desc">Buildings, distant trees, skybox props</div>
+            </div>
+            <div class="quality-card" data-res="256" data-tier="ULTRA FAR">
+              <div class="quality-check">✓</div>
+              <div class="quality-res">256 <span class="x">× 256</span></div>
+              <div class="quality-tier">ULTRA FAR</div>
+              <div class="quality-desc">Things barely visible, almost silhouettes</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- STEP 2: UPLOAD UV -->
+    <section class="stage" data-stage="2">
       <div class="work">
         <div>
           <div class="dropzone" id="uvDrop">
@@ -418,8 +474,34 @@
       </div>
     </section>
 
-    <!-- STEP 2: MATERIALS -->
-    <section class="stage" data-stage="2">
+    <!-- STEP 3: CROP/FIT TO SQUARE -->
+    <section class="stage" data-stage="3">
+      <div class="work">
+        <div class="crop-wrap">
+          <div class="crop-hint">
+            Drag to pan · scroll or use slider to zoom · the orange square is your UV space
+          </div>
+          <div class="crop-canvas-frame">
+            <canvas id="cropCanvas" width="480" height="480"></canvas>
+          </div>
+          <div class="crop-controls">
+            <div class="field" style="margin:0;">
+              <label>Zoom <span class="val" id="cropScaleVal">1.00×</span></label>
+              <input type="range" id="cropScaleSlider" min="0.05" max="5" step="0.05" value="1">
+            </div>
+            <div class="crop-btn-row">
+              <button class="btn" id="cropFitBtn">⊡ Fit</button>
+              <button class="btn" id="cropFillBtn">⊞ Fill</button>
+              <div style="flex:1;"></div>
+              <button class="primary" id="confirmCropBtn">Confirm Crop →</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- STEP 4: MATERIALS -->
+    <section class="stage" data-stage="4">
       <div class="work">
         <div style="width: 480px; max-width: 90vw;">
           <h2 style="font-size:14px; margin-bottom:8px;">Define your materials</h2>
@@ -432,8 +514,8 @@
       </div>
     </section>
 
-    <!-- STEP 3: DRAW -->
-    <section class="stage" data-stage="3">
+    <!-- STEP 5: DRAW -->
+    <section class="stage" data-stage="5">
       <div class="toolbar">
         <div class="tool active" data-tool="polygon" title="Polygon (P)">⬠</div>
         <div class="tool" data-tool="erase" title="Delete shape (D)">⌫</div>
@@ -472,8 +554,8 @@
       </aside>
     </section>
 
-    <!-- STEP 4: ALBEDOS -->
-    <section class="stage" data-stage="4">
+    <!-- STEP 6: ALBEDOS -->
+    <section class="stage" data-stage="6">
       <div class="work">
         <div style="width: 100%; max-width: 880px;">
           <h2 style="font-size:14px; margin-bottom:8px;">Upload material albedos</h2>
@@ -485,34 +567,23 @@
       </div>
     </section>
 
-    <!-- STEP 5: EXPORT -->
-    <section class="stage" data-stage="5">
+    <!-- STEP 7: EXPORT -->
+    <section class="stage" data-stage="7">
       <div class="work" style="flex-direction: column; align-items: stretch; padding: 24px 32px;">
         <div style="display:flex; align-items:center; gap:16px; margin-bottom:20px;">
           <div>
             <h2 style="font-size:14px;">Generated PBR Maps</h2>
             <p style="font-size:11px; color: var(--muted); margin-top:4px;">
-              Click any map to download · all maps are <span id="exportSize" style="color: var(--accent);">—</span>
+              Click any map to download · exporting at
+              <span id="exportQualityBadge" class="quality-badge">—</span>
             </p>
           </div>
           <div style="flex:1;"></div>
-          <button class="primary" id="downloadAll">↓ Download All as ZIP-like</button>
+          <button class="primary" id="downloadAll">↓ Download All</button>
         </div>
-
         <div class="maps-grid" id="mapsGrid"></div>
       </div>
       <aside class="panel">
-        <div class="panel-section">
-          <h3>Output Resolution</h3>
-          <div class="field">
-            <select id="exportRes">
-              <option value="512">512 × 512</option>
-              <option value="1024" selected>1024 × 1024</option>
-              <option value="2048">2048 × 2048</option>
-              <option value="4096">4096 × 4096</option>
-            </select>
-          </div>
-        </div>
         <div class="panel-section">
           <h3>Normal Map</h3>
           <div class="field">
@@ -522,15 +593,11 @@
           <label class="toggle">
             <input type="checkbox" id="invertY" checked>
             <span class="toggle-switch"></span>
-            OpenGL convention (Blender) — invert Y
+            OpenGL (Blender) — invert Y
           </label>
         </div>
         <div class="panel-section">
-          <h3>Roughness</h3>
-          <div class="field">
-            <label>Base <span class="val" id="roughnessBaseVal">0.5</span></label>
-            <input type="range" id="roughnessBase" min="0" max="1" step="0.01" value="0.5">
-          </div>
+          <h3>Roughness Variation</h3>
           <div class="field">
             <label>Contrast <span class="val" id="roughnessContrastVal">1.0</span></label>
             <input type="range" id="roughnessContrast" min="0" max="3" step="0.05" value="1">
@@ -541,9 +608,13 @@
             Invert (lighter = rougher)
           </label>
         </div>
-        <div class="panel-section">
-          <h3>Per-Material Metallic</h3>
-          <div id="metallicControls"></div>
+        <div class="panel-section" style="flex:1; overflow-y:auto;">
+          <h3>Per-Material Properties</h3>
+          <p style="font-size:10px; color:var(--muted-2); margin-bottom:10px; line-height:1.5;">
+            Roughness 0 = mirror smooth · 1 = fully matte<br>
+            Metallic 1 + Roughness 0 = shiny metal
+          </p>
+          <div id="matPropsControls"></div>
         </div>
         <div class="panel-section">
           <button class="primary" id="regenerate" style="width: 100%;">⟳ Regenerate Maps</button>
@@ -556,7 +627,7 @@
   <div class="footer-bar">
     <button id="prevBtn">← Back</button>
     <div class="spacer"></div>
-    <div class="footer-info" id="footerInfo">Step 1 of 5 — Upload your UV layout to begin</div>
+    <div class="footer-info" id="footerInfo">Step 1 of 7 — Choose your output quality</div>
     <div class="spacer"></div>
     <button class="primary" id="nextBtn">Next →</button>
   </div>
@@ -566,35 +637,45 @@
 
 <script>
 // =========================================================================
+// CONSTANTS
+// =========================================================================
+const CROP_SIZE = 480;
+
+// =========================================================================
 // STATE
 // =========================================================================
 const state = {
   step: 1,
+  qualityChosen: false,
+  exportRes: 1024,
+  exportTier: '',
+  rawUvImage: null,
   uvImage: null,
-  uvW: 0,
-  uvH: 0,
+  uvW: CROP_SIZE,
+  uvH: CROP_SIZE,
+  cropInitialized: false,
+  cropConfirmed: false,
+  cropOffsetX: 0,
+  cropOffsetY: 0,
+  cropScale: 1,
   materials: [
-    { id: 1, name: 'Material A', color: '#ff6b1a', albedo: null, metallic: 0 },
-    { id: 2, name: 'Material B', color: '#4ade80', albedo: null, metallic: 0 },
-    { id: 3, name: 'Material C', color: '#3b82f6', albedo: null, metallic: 0 },
+    { id: 1, name: 'Material A', color: '#ff6b1a', albedo: null, metallic: 0, roughness: 0.5 },
+    { id: 2, name: 'Material B', color: '#4ade80', albedo: null, metallic: 0, roughness: 0.5 },
+    { id: 3, name: 'Material C', color: '#3b82f6', albedo: null, metallic: 0, roughness: 0.5 },
   ],
   nextMaterialId: 4,
-  shapes: [],         // { id, materialId, points: [[x,y],...] }
+  shapes: [],
   nextShapeId: 1,
-  currentShape: null, // points being drawn
+  currentShape: null,
   activeMaterialId: 1,
   tool: 'polygon',
   uvOpacity: 1.0,
   maskOpacity: 0.5,
   hoveredShape: null,
-  // Export settings
-  exportRes: 1024,
   normalStrength: 2.0,
   invertY: true,
-  roughnessBase: 0.5,
   roughnessContrast: 1.0,
   roughnessInvert: false,
-  // Generated maps
   outputAlbedo: null,
   outputNormal: null,
   outputRoughness: null,
@@ -624,9 +705,7 @@ function pointInPolygon(pt, poly) {
   return inside;
 }
 
-function dist(a, b) {
-  return Math.hypot(a[0] - b[0], a[1] - b[1]);
-}
+function dist(a, b) { return Math.hypot(a[0] - b[0], a[1] - b[1]); }
 
 function loadImageFromFile(file) {
   return new Promise((res, rej) => {
@@ -646,11 +725,12 @@ function loadImageFromFile(file) {
 // STEP NAVIGATION
 // =========================================================================
 function setStep(n) {
-  if (n < 1 || n > 5) return;
-  // Validate
-  if (n >= 2 && !state.uvImage) { toast('Upload a UV layout first'); return; }
-  if (n >= 3 && state.materials.length === 0) { toast('Add at least one material'); return; }
-  if (n >= 5 && state.shapes.length === 0) { toast('Draw at least one mask shape'); return; }
+  if (n < 1 || n > 7) return;
+  if (n >= 2 && !state.qualityChosen) { toast('Choose an output quality first'); return; }
+  if (n >= 3 && !state.rawUvImage)   { toast('Upload a UV layout first'); return; }
+  if (n >= 4 && !state.cropConfirmed){ toast('Confirm your UV crop first'); return; }
+  if (n >= 5 && state.materials.length === 0) { toast('Add at least one material'); return; }
+  if (n >= 7 && state.shapes.length === 0)    { toast('Draw at least one mask shape'); return; }
 
   state.step = n;
   document.querySelectorAll('.stage').forEach(s => s.classList.remove('active'));
@@ -662,21 +742,25 @@ function setStep(n) {
   });
 
   document.getElementById('prevBtn').style.visibility = n === 1 ? 'hidden' : 'visible';
-  document.getElementById('nextBtn').textContent = n === 5 ? '✓ Done' : 'Next →';
-  document.getElementById('nextBtn').style.visibility = n === 5 ? 'hidden' : 'visible';
+  const isLast = n === 7;
+  document.getElementById('nextBtn').textContent = isLast ? '✓ Done' : 'Next →';
+  document.getElementById('nextBtn').style.visibility = isLast ? 'hidden' : 'visible';
 
   const messages = {
-    1: 'Step 1 of 5 — Upload your UV layout to begin',
-    2: 'Step 2 of 5 — Define one material per surface type',
-    3: 'Step 3 of 5 — Pick a material, click to draw polygon masks',
-    4: 'Step 4 of 5 — Upload an albedo for each material',
-    5: 'Step 5 of 5 — PBR maps generated. Download what you need.',
+    1: 'Step 1 of 7 — Choose your output quality',
+    2: 'Step 2 of 7 — Upload your UV layout screenshot',
+    3: 'Step 3 of 7 — Fit the UV into the 1:1 square',
+    4: 'Step 4 of 7 — Define one material per surface type',
+    5: 'Step 5 of 7 — Pick a material and draw polygon masks',
+    6: 'Step 6 of 7 — Upload an albedo texture for each material',
+    7: 'Step 7 of 7 — PBR maps generated. Download what you need.',
   };
   document.getElementById('footerInfo').textContent = messages[n];
 
-  if (n === 3) renderDrawStep();
-  if (n === 4) renderAlbedoStep();
-  if (n === 5) renderExportStep();
+  if (n === 3) renderCropStep();
+  if (n === 5) renderDrawStep();
+  if (n === 6) renderAlbedoStep();
+  if (n === 7) renderExportStep();
 }
 
 document.querySelectorAll('.step').forEach(s => {
@@ -686,7 +770,21 @@ document.getElementById('prevBtn').addEventListener('click', () => setStep(state
 document.getElementById('nextBtn').addEventListener('click', () => setStep(state.step + 1));
 
 // =========================================================================
-// STEP 1: UPLOAD UV
+// STEP 1: QUALITY SELECTION
+// =========================================================================
+document.querySelectorAll('.quality-card').forEach(card => {
+  card.addEventListener('click', () => {
+    document.querySelectorAll('.quality-card').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+    state.exportRes = parseInt(card.dataset.res);
+    state.exportTier = card.dataset.tier;
+    state.qualityChosen = true;
+    setTimeout(() => setStep(2), 350);
+  });
+});
+
+// =========================================================================
+// STEP 2: UPLOAD UV
 // =========================================================================
 const uvDrop = document.getElementById('uvDrop');
 const uvFile = document.getElementById('uvFile');
@@ -707,24 +805,192 @@ uvFile.addEventListener('change', async e => {
 async function handleUVUpload(file) {
   try {
     const img = await loadImageFromFile(file);
-    state.uvImage = img;
-    state.uvW = img.width;
-    state.uvH = img.height;
+    state.rawUvImage = img;
+    state.uvImage = null;
+    state.cropInitialized = false;
+    state.cropConfirmed = false;
+    state.cropOffsetX = 0;
+    state.cropOffsetY = 0;
+    state.cropScale = 1;
     toast(`UV loaded: ${img.width}×${img.height}`);
-    // Show preview in dropzone
     uvDrop.innerHTML = `
-      <img src="${img.src}" style="max-width: 100%; max-height: 70%; object-fit: contain;">
-      <div class="dropzone-title" style="margin-top: 12px;">${file.name}</div>
+      <img src="${img.src}" style="max-width:100%; max-height:70%; object-fit:contain;">
+      <div class="dropzone-title" style="margin-top:12px;">${file.name}</div>
       <div class="dropzone-hint">${img.width} × ${img.height} · Click to change</div>
     `;
-    setTimeout(() => setStep(2), 600);
-  } catch (e) {
+    setTimeout(() => setStep(3), 400);
+  } catch {
     toast('Failed to load image');
   }
 }
 
 // =========================================================================
-// STEP 2: MATERIALS
+// STEP 3: CROP / FIT TO SQUARE
+// =========================================================================
+const cropCanvas = document.getElementById('cropCanvas');
+const cropCtx = cropCanvas.getContext('2d');
+const cropDrag = { active: false, startX: 0, startY: 0, startOX: 0, startOY: 0 };
+
+function renderCropStep() {
+  if (!state.rawUvImage) return;
+  if (!state.cropInitialized) {
+    autoCropFit();
+    state.cropInitialized = true;
+  }
+  updateCropScaleUI();
+  redrawCrop();
+}
+
+function autoCropFit() {
+  const img = state.rawUvImage;
+  const scale = Math.min(CROP_SIZE / img.width, CROP_SIZE / img.height) * 0.95;
+  state.cropScale = scale;
+  state.cropOffsetX = (CROP_SIZE - img.width * scale) / 2;
+  state.cropOffsetY = (CROP_SIZE - img.height * scale) / 2;
+}
+
+function autoCropFill() {
+  const img = state.rawUvImage;
+  const scale = Math.max(CROP_SIZE / img.width, CROP_SIZE / img.height);
+  state.cropScale = scale;
+  state.cropOffsetX = (CROP_SIZE - img.width * scale) / 2;
+  state.cropOffsetY = (CROP_SIZE - img.height * scale) / 2;
+}
+
+function updateCropScaleUI() {
+  const slider = document.getElementById('cropScaleSlider');
+  const val = document.getElementById('cropScaleVal');
+  if (slider) slider.value = Math.min(5, Math.max(0.05, state.cropScale));
+  if (val) val.textContent = state.cropScale.toFixed(2) + '×';
+}
+
+function redrawCrop() {
+  const ctx = cropCtx;
+  const cs = CROP_SIZE;
+  ctx.clearRect(0, 0, cs, cs);
+
+  // Checkerboard
+  for (let y = 0; y < cs; y += 16) {
+    for (let x = 0; x < cs; x += 16) {
+      ctx.fillStyle = ((x + y) / 16) % 2 === 0 ? '#1a1a1a' : '#222';
+      ctx.fillRect(x, y, 16, 16);
+    }
+  }
+
+  if (!state.rawUvImage) return;
+  ctx.drawImage(
+    state.rawUvImage,
+    state.cropOffsetX,
+    state.cropOffsetY,
+    state.rawUvImage.width * state.cropScale,
+    state.rawUvImage.height * state.cropScale
+  );
+
+  // Border overlay
+  ctx.strokeStyle = '#ff6b1a';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(1, 1, cs - 2, cs - 2);
+
+  // Corner tick marks
+  const tick = 16;
+  ctx.strokeStyle = '#ff6b1a';
+  ctx.lineWidth = 3;
+  [[0,0],[cs,0],[0,cs],[cs,cs]].forEach(([cx, cy]) => {
+    const sx = cx === 0 ? 1 : -1;
+    const sy = cy === 0 ? 1 : -1;
+    ctx.beginPath();
+    ctx.moveTo(cx + sx * 1, cy + sy * tick);
+    ctx.lineTo(cx + sx * 1, cy + sy * 1);
+    ctx.lineTo(cx + sx * tick, cy + sy * 1);
+    ctx.stroke();
+  });
+}
+
+cropCanvas.addEventListener('mousedown', e => {
+  cropDrag.active = true;
+  cropDrag.startX = e.clientX;
+  cropDrag.startY = e.clientY;
+  cropDrag.startOX = state.cropOffsetX;
+  cropDrag.startOY = state.cropOffsetY;
+  cropCanvas.classList.add('grabbing');
+});
+document.addEventListener('mousemove', e => {
+  if (!cropDrag.active) return;
+  state.cropOffsetX = cropDrag.startOX + (e.clientX - cropDrag.startX);
+  state.cropOffsetY = cropDrag.startOY + (e.clientY - cropDrag.startY);
+  redrawCrop();
+});
+document.addEventListener('mouseup', () => {
+  cropDrag.active = false;
+  cropCanvas.classList.remove('grabbing');
+});
+
+cropCanvas.addEventListener('wheel', e => {
+  e.preventDefault();
+  const delta = e.deltaY > 0 ? 0.92 : 1.08;
+  const rect = cropCanvas.getBoundingClientRect();
+  const mx = (e.clientX - rect.left) * (CROP_SIZE / rect.width);
+  const my = (e.clientY - rect.top) * (CROP_SIZE / rect.height);
+  state.cropOffsetX = mx + (state.cropOffsetX - mx) * delta;
+  state.cropOffsetY = my + (state.cropOffsetY - my) * delta;
+  state.cropScale = Math.max(0.05, Math.min(5, state.cropScale * delta));
+  updateCropScaleUI();
+  redrawCrop();
+}, { passive: false });
+
+document.getElementById('cropScaleSlider').addEventListener('input', e => {
+  const newScale = parseFloat(e.target.value);
+  const cx = CROP_SIZE / 2, cy = CROP_SIZE / 2;
+  const ratio = newScale / state.cropScale;
+  state.cropOffsetX = cx + (state.cropOffsetX - cx) * ratio;
+  state.cropOffsetY = cy + (state.cropOffsetY - cy) * ratio;
+  state.cropScale = newScale;
+  document.getElementById('cropScaleVal').textContent = newScale.toFixed(2) + '×';
+  redrawCrop();
+});
+
+document.getElementById('cropFitBtn').addEventListener('click', () => {
+  autoCropFit();
+  updateCropScaleUI();
+  redrawCrop();
+});
+document.getElementById('cropFillBtn').addEventListener('click', () => {
+  autoCropFill();
+  updateCropScaleUI();
+  redrawCrop();
+});
+
+document.getElementById('confirmCropBtn').addEventListener('click', () => {
+  const out = document.createElement('canvas');
+  out.width = CROP_SIZE; out.height = CROP_SIZE;
+  const ctx = out.getContext('2d');
+  // Redraw at crop canvas resolution
+  for (let y = 0; y < CROP_SIZE; y += 16) {
+    for (let x = 0; x < CROP_SIZE; x += 16) {
+      ctx.fillStyle = ((x + y) / 16) % 2 === 0 ? '#1a1a1a' : '#222';
+      ctx.fillRect(x, y, 16, 16);
+    }
+  }
+  ctx.drawImage(
+    state.rawUvImage,
+    state.cropOffsetX, state.cropOffsetY,
+    state.rawUvImage.width * state.cropScale,
+    state.rawUvImage.height * state.cropScale
+  );
+  const img = new Image();
+  img.onload = () => {
+    state.uvImage = img;
+    state.uvW = CROP_SIZE;
+    state.uvH = CROP_SIZE;
+    state.cropConfirmed = true;
+    toast('Crop confirmed');
+    setStep(4);
+  };
+  img.src = out.toDataURL();
+});
+
+// =========================================================================
+// STEP 4: MATERIALS
 // =========================================================================
 function renderMaterials() {
   const list = document.getElementById('materialsList');
@@ -734,7 +1000,7 @@ function renderMaterials() {
     const row = document.createElement('div');
     row.className = 'material-row';
     row.innerHTML = `
-      <label class="swatch" style="background: ${m.color};">
+      <label class="swatch" style="background:${m.color};">
         <input type="color" value="${m.color}" data-mat-id="${m.id}" data-action="color">
       </label>
       <input class="material-name" value="${m.name}" data-mat-id="${m.id}" data-action="rename">
@@ -754,6 +1020,7 @@ document.getElementById('addMaterial').addEventListener('click', () => {
     color: palette[idx],
     albedo: null,
     metallic: 0,
+    roughness: 0.5,
   });
   renderMaterials();
 });
@@ -785,7 +1052,7 @@ document.getElementById('materialsList').addEventListener('click', e => {
 renderMaterials();
 
 // =========================================================================
-// STEP 3: DRAW MASKS
+// STEP 5: DRAW MASKS
 // =========================================================================
 const drawCanvas = document.getElementById('drawCanvas');
 const dctx = drawCanvas.getContext('2d');
@@ -793,7 +1060,6 @@ const SNAP_DIST = 12;
 
 function renderDrawStep() {
   if (!state.uvImage) return;
-  // Set canvas to image size, will be scaled via CSS
   drawCanvas.width = state.uvW;
   drawCanvas.height = state.uvH;
   renderDrawMaterials();
@@ -809,7 +1075,7 @@ function renderDrawMaterials() {
     const row = document.createElement('div');
     row.className = 'material-row' + (state.activeMaterialId === m.id ? ' active' : '');
     row.innerHTML = `
-      <span class="swatch" style="background: ${m.color}; cursor: default;"></span>
+      <span class="swatch" style="background:${m.color}; cursor:default;"></span>
       <span class="material-name" style="cursor:pointer;">${m.name}</span>
       <span class="material-count">${shapeCount}</span>
     `;
@@ -826,7 +1092,7 @@ function renderShapesList() {
   document.getElementById('shapeCount').textContent = state.shapes.length;
   list.innerHTML = '';
   if (state.shapes.length === 0) {
-    list.innerHTML = '<div style="font-size:11px; color:var(--muted-2); padding: 8px 0;">No shapes yet.</div>';
+    list.innerHTML = '<div style="font-size:11px; color:var(--muted-2); padding:8px 0;">No shapes yet.</div>';
     return;
   }
   state.shapes.forEach((s, i) => {
@@ -836,8 +1102,8 @@ function renderShapesList() {
     row.className = 'material-row';
     row.style.cursor = 'default';
     row.innerHTML = `
-      <span class="swatch" style="background: ${m.color}; cursor: default;"></span>
-      <span style="flex:1; font-size: 11px;">Shape ${i + 1} · ${m.name}</span>
+      <span class="swatch" style="background:${m.color}; cursor:default;"></span>
+      <span style="flex:1; font-size:11px;">Shape ${i + 1} · ${m.name}</span>
       <span class="material-count">${s.points.length}pt</span>
       <button class="material-delete" data-shape-id="${s.id}" title="Delete shape">×</button>
     `;
@@ -858,17 +1124,13 @@ function redrawCanvas() {
   const c = drawCanvas;
   const ctx = dctx;
   ctx.clearRect(0, 0, c.width, c.height);
-
-  // BG checkerboard for transparency-aware look
   ctx.fillStyle = '#1a1a1a';
   ctx.fillRect(0, 0, c.width, c.height);
 
-  // UV image
   ctx.globalAlpha = state.uvOpacity;
   ctx.drawImage(state.uvImage, 0, 0, c.width, c.height);
   ctx.globalAlpha = 1;
 
-  // Existing shapes
   state.shapes.forEach(s => {
     const m = state.materials.find(mm => mm.id === s.materialId);
     if (!m || s.points.length < 2) return;
@@ -880,32 +1142,23 @@ function redrawCanvas() {
     ctx.closePath();
     ctx.fill();
     ctx.globalAlpha = 1;
-
-    // Stroke
     ctx.strokeStyle = m.color;
     ctx.lineWidth = s.id === state.hoveredShape ? 4 : 2;
     ctx.stroke();
   });
 
-  // In-progress shape
   if (state.currentShape && state.currentShape.length > 0) {
     const m = state.materials.find(mm => mm.id === state.activeMaterialId);
     const color = m ? m.color : '#ff6b1a';
     ctx.strokeStyle = color;
     ctx.lineWidth = 2;
-    ctx.fillStyle = color;
-
     ctx.beginPath();
     ctx.moveTo(state.currentShape[0][0], state.currentShape[0][1]);
-    for (let i = 1; i < state.currentShape.length; i++) {
-      ctx.lineTo(state.currentShape[i][0], state.currentShape[i][1]);
-    }
+    for (let i = 1; i < state.currentShape.length; i++) ctx.lineTo(state.currentShape[i][0], state.currentShape[i][1]);
     ctx.stroke();
-
-    // Vertices
     state.currentShape.forEach((pt, i) => {
       ctx.beginPath();
-      const r = (i === 0) ? 8 : 4;
+      const r = i === 0 ? 8 : 4;
       ctx.arc(pt[0], pt[1], r, 0, Math.PI * 2);
       if (i === 0) {
         ctx.strokeStyle = color; ctx.lineWidth = 2;
@@ -929,18 +1182,12 @@ function canvasCoords(e) {
 drawCanvas.addEventListener('click', e => {
   if (state.tool !== 'polygon') return;
   const pt = canvasCoords(e);
-
   if (!state.currentShape) state.currentShape = [];
-
-  // Close on first point
   if (state.currentShape.length >= 3) {
     const first = state.currentShape[0];
     const rect = drawCanvas.getBoundingClientRect();
     const screenScale = drawCanvas.width / rect.width;
-    if (dist(pt, first) < SNAP_DIST * screenScale) {
-      finishShape();
-      return;
-    }
+    if (dist(pt, first) < SNAP_DIST * screenScale) { finishShape(); return; }
   }
   state.currentShape.push(pt);
   redrawCanvas();
@@ -952,18 +1199,13 @@ drawCanvas.addEventListener('dblclick', () => {
 
 function finishShape() {
   if (!state.currentShape || state.currentShape.length < 3) return;
-  state.shapes.push({
-    id: state.nextShapeId++,
-    materialId: state.activeMaterialId,
-    points: state.currentShape,
-  });
+  state.shapes.push({ id: state.nextShapeId++, materialId: state.activeMaterialId, points: state.currentShape });
   state.currentShape = null;
   renderShapesList();
   renderDrawMaterials();
   redrawCanvas();
 }
 
-// Erase tool: click inside shape to delete
 drawCanvas.addEventListener('click', e => {
   if (state.tool !== 'erase') return;
   const pt = canvasCoords(e);
@@ -978,7 +1220,6 @@ drawCanvas.addEventListener('click', e => {
   }
 });
 
-// Tool selection
 document.querySelectorAll('.tool[data-tool]').forEach(t => {
   t.addEventListener('click', () => {
     document.querySelectorAll('.tool').forEach(tt => tt.classList.remove('active'));
@@ -1007,9 +1248,8 @@ document.getElementById('clearShapeBtn').addEventListener('click', () => {
   redrawCanvas();
 });
 
-// Keyboard
 document.addEventListener('keydown', e => {
-  if (state.step !== 3) return;
+  if (state.step !== 5) return;
   if (e.target.tagName === 'INPUT') return;
   if (e.key === 'Escape') { state.currentShape = null; redrawCanvas(); }
   else if (e.key === 'z' && (e.ctrlKey || e.metaKey)) {
@@ -1018,7 +1258,6 @@ document.addEventListener('keydown', e => {
   }
 });
 
-// Opacity sliders
 document.getElementById('uvOpacity').addEventListener('input', e => {
   state.uvOpacity = e.target.value / 100;
   document.getElementById('uvOpacityVal').textContent = e.target.value + '%';
@@ -1031,7 +1270,7 @@ document.getElementById('maskOpacity').addEventListener('input', e => {
 });
 
 // =========================================================================
-// STEP 4: ALBEDOS
+// STEP 6: ALBEDOS
 // =========================================================================
 function renderAlbedoStep() {
   const grid = document.getElementById('albedoGrid');
@@ -1041,13 +1280,11 @@ function renderAlbedoStep() {
     card.className = 'albedo-card';
     card.innerHTML = `
       <div class="albedo-card-head">
-        <span class="swatch" style="background: ${m.color}; cursor:default;"></span>
+        <span class="swatch" style="background:${m.color}; cursor:default;"></span>
         <span class="name">${m.name}</span>
       </div>
       <label class="albedo-slot" data-mat-id="${m.id}">
-        ${m.albedo
-          ? `<img src="${m.albedo.src}">`
-          : `<span class="placeholder">Drop / Click<br>to upload</span>`}
+        ${m.albedo ? `<img src="${m.albedo.src}">` : `<span class="placeholder">Drop / Click<br>to upload</span>`}
         <input type="file" accept="image/*" style="display:none;" data-mat-id="${m.id}">
       </label>
     `;
@@ -1060,8 +1297,7 @@ function renderAlbedoStep() {
       const f = e.target.files[0];
       if (!f) return;
       const img = await loadImageFromFile(f);
-      const m = state.materials.find(m => m.id === id);
-      m.albedo = img;
+      state.materials.find(m => m.id === id).albedo = img;
       renderAlbedoStep();
     });
   });
@@ -1074,63 +1310,70 @@ function renderAlbedoStep() {
       const f = e.dataTransfer.files[0];
       if (!f) return;
       const img = await loadImageFromFile(f);
-      const m = state.materials.find(m => m.id === id);
-      m.albedo = img;
+      state.materials.find(m => m.id === id).albedo = img;
       renderAlbedoStep();
     });
   });
 }
 
 // =========================================================================
-// STEP 5: EXPORT — generate PBR maps
+// STEP 7: EXPORT — generate PBR maps
 // =========================================================================
 function renderExportStep() {
-  const grid = document.getElementById('mapsGrid');
-  document.getElementById('exportSize').textContent = state.exportRes + ' × ' + state.exportRes;
+  const badge = document.getElementById('exportQualityBadge');
+  badge.textContent = `${state.exportTier} — ${state.exportRes} × ${state.exportRes}`;
 
-  // Build metallic controls
-  const metCtrls = document.getElementById('metallicControls');
-  metCtrls.innerHTML = '';
+  const ctrls = document.getElementById('matPropsControls');
+  ctrls.innerHTML = '';
+
   state.materials.forEach(m => {
-    const wrap = document.createElement('div');
-    wrap.className = 'field';
-    wrap.innerHTML = `
-      <label>
-        <span style="display:flex; align-items:center; gap:6px;">
-          <span class="swatch" style="background:${m.color}; width:12px; height:12px;"></span>
-          ${m.name}
-        </span>
-        <span class="val" data-met-id="${m.id}">${m.metallic.toFixed(2)}</span>
-      </label>
-      <input type="range" min="0" max="1" step="0.01" value="${m.metallic}" data-met-id="${m.id}">
+    const block = document.createElement('div');
+    block.className = 'mat-props';
+    block.innerHTML = `
+      <div class="mat-props-head">
+        <span class="swatch" style="background:${m.color}; cursor:default; width:14px; height:14px;"></span>
+        <span>${m.name}</span>
+      </div>
+      <div class="field">
+        <label>Roughness <span class="val" data-prop="roughness-val-${m.id}">${m.roughness.toFixed(2)}</span></label>
+        <input type="range" min="0" max="1" step="0.01" value="${m.roughness}" data-prop="roughness" data-mat-id="${m.id}">
+      </div>
+      <div class="field">
+        <label>Metallic <span class="val" data-prop="metallic-val-${m.id}">${m.metallic.toFixed(2)}</span></label>
+        <input type="range" min="0" max="1" step="0.01" value="${m.metallic}" data-prop="metallic" data-mat-id="${m.id}">
+      </div>
+      <div class="shine-hint" data-hint="${m.id}">
+        ✦ Shiny metal: Metallic 1.0 + Roughness near 0 in Blender Principled BSDF
+      </div>
     `;
-    metCtrls.appendChild(wrap);
+    ctrls.appendChild(block);
+    updateShineHint(m);
   });
-  metCtrls.querySelectorAll('input').forEach(inp => {
+
+  ctrls.querySelectorAll('input[type=range]').forEach(inp => {
     inp.addEventListener('input', e => {
-      const id = parseInt(e.target.dataset.metId);
+      const id = parseInt(e.target.dataset.matId);
+      const prop = e.target.dataset.prop;
       const m = state.materials.find(m => m.id === id);
-      m.metallic = parseFloat(e.target.value);
-      metCtrls.querySelector(`.val[data-met-id="${id}"]`).textContent = m.metallic.toFixed(2);
+      m[prop] = parseFloat(e.target.value);
+      ctrls.querySelector(`[data-prop="${prop}-val-${id}"]`).textContent = m[prop].toFixed(2);
+      updateShineHint(m);
     });
   });
 
   generateMaps();
 }
 
-document.getElementById('exportRes').addEventListener('change', e => {
-  state.exportRes = parseInt(e.target.value);
-  document.getElementById('exportSize').textContent = state.exportRes + ' × ' + state.exportRes;
-});
+function updateShineHint(m) {
+  const hint = document.querySelector(`[data-hint="${m.id}"]`);
+  if (hint) hint.classList.toggle('visible', m.metallic >= 0.7);
+}
+
 document.getElementById('normalStrength').addEventListener('input', e => {
   state.normalStrength = parseFloat(e.target.value);
   document.getElementById('normalStrengthVal').textContent = state.normalStrength.toFixed(1);
 });
 document.getElementById('invertY').addEventListener('change', e => { state.invertY = e.target.checked; });
-document.getElementById('roughnessBase').addEventListener('input', e => {
-  state.roughnessBase = parseFloat(e.target.value);
-  document.getElementById('roughnessBaseVal').textContent = state.roughnessBase.toFixed(2);
-});
 document.getElementById('roughnessContrast').addEventListener('input', e => {
   state.roughnessContrast = parseFloat(e.target.value);
   document.getElementById('roughnessContrastVal').textContent = state.roughnessContrast.toFixed(2);
@@ -1140,71 +1383,49 @@ document.getElementById('regenerate').addEventListener('click', generateMaps);
 
 function generateMaps() {
   const size = state.exportRes;
-
-  // Compute scale from UV-space to output-space
   const sx = size / state.uvW;
   const sy = size / state.uvH;
 
-  // ALBEDO output
+  // ALBEDO
   const albedo = document.createElement('canvas');
   albedo.width = size; albedo.height = size;
   const aCtx = albedo.getContext('2d');
   aCtx.fillStyle = '#000';
   aCtx.fillRect(0, 0, size, size);
-
-  // For each shape, clip to polygon and fill with material's albedo (tiled)
   state.shapes.forEach(s => {
     const m = state.materials.find(mm => mm.id === s.materialId);
     if (!m) return;
     aCtx.save();
-    aCtx.beginPath();
-    aCtx.moveTo(s.points[0][0] * sx, s.points[0][1] * sy);
-    for (let i = 1; i < s.points.length; i++) {
-      aCtx.lineTo(s.points[i][0] * sx, s.points[i][1] * sy);
-    }
-    aCtx.closePath();
+    clipPath(aCtx, s.points, sx, sy);
     aCtx.clip();
     if (m.albedo) {
-      const pattern = aCtx.createPattern(m.albedo, 'repeat');
-      aCtx.fillStyle = pattern;
-      aCtx.fillRect(0, 0, size, size);
+      aCtx.fillStyle = aCtx.createPattern(m.albedo, 'repeat');
     } else {
       aCtx.fillStyle = m.color;
-      aCtx.fillRect(0, 0, size, size);
     }
+    aCtx.fillRect(0, 0, size, size);
     aCtx.restore();
   });
-
   state.outputAlbedo = albedo;
 
-  // NORMAL output — composite per-shape normal maps generated from each albedo
+  // NORMAL
   const normal = document.createElement('canvas');
   normal.width = size; normal.height = size;
   const nCtx = normal.getContext('2d');
-  // Default flat normal (128,128,255)
   nCtx.fillStyle = 'rgb(128,128,255)';
   nCtx.fillRect(0, 0, size, size);
-
-  // Pre-generate normal map for each material with an albedo
-  const materialNormals = {};
+  const matNormals = {};
   state.materials.forEach(m => {
-    if (m.albedo) {
-      materialNormals[m.id] = generateNormalFromImage(m.albedo, state.normalStrength, state.invertY);
-    }
+    if (m.albedo) matNormals[m.id] = generateNormalFromImage(m.albedo, state.normalStrength, state.invertY);
   });
-
   state.shapes.forEach(s => {
     const m = state.materials.find(mm => mm.id === s.materialId);
     if (!m) return;
     nCtx.save();
-    nCtx.beginPath();
-    nCtx.moveTo(s.points[0][0] * sx, s.points[0][1] * sy);
-    for (let i = 1; i < s.points.length; i++) nCtx.lineTo(s.points[i][0] * sx, s.points[i][1] * sy);
-    nCtx.closePath();
+    clipPath(nCtx, s.points, sx, sy);
     nCtx.clip();
-    if (materialNormals[m.id]) {
-      const pattern = nCtx.createPattern(materialNormals[m.id], 'repeat');
-      nCtx.fillStyle = pattern;
+    if (matNormals[m.id]) {
+      nCtx.fillStyle = nCtx.createPattern(matNormals[m.id], 'repeat');
       nCtx.fillRect(0, 0, size, size);
     } else {
       nCtx.fillStyle = 'rgb(128,128,255)';
@@ -1214,40 +1435,37 @@ function generateMaps() {
   });
   state.outputNormal = normal;
 
-  // ROUGHNESS — derive from albedo per material
+  // ROUGHNESS
   const roughness = document.createElement('canvas');
   roughness.width = size; roughness.height = size;
   const rCtx = roughness.getContext('2d');
-  const rBase = Math.round(state.roughnessBase * 255);
-  rCtx.fillStyle = `rgb(${rBase},${rBase},${rBase})`;
+  rCtx.fillStyle = 'rgb(128,128,128)';
   rCtx.fillRect(0, 0, size, size);
-
-  const materialRoughness = {};
+  const matRoughness = {};
   state.materials.forEach(m => {
     if (m.albedo) {
-      materialRoughness[m.id] = generateRoughnessFromImage(
-        m.albedo, state.roughnessBase, state.roughnessContrast, state.roughnessInvert);
+      matRoughness[m.id] = generateRoughnessFromImage(m.albedo, m.roughness, state.roughnessContrast, state.roughnessInvert);
     }
   });
   state.shapes.forEach(s => {
     const m = state.materials.find(mm => mm.id === s.materialId);
     if (!m) return;
     rCtx.save();
-    rCtx.beginPath();
-    rCtx.moveTo(s.points[0][0] * sx, s.points[0][1] * sy);
-    for (let i = 1; i < s.points.length; i++) rCtx.lineTo(s.points[i][0] * sx, s.points[i][1] * sy);
-    rCtx.closePath();
+    clipPath(rCtx, s.points, sx, sy);
     rCtx.clip();
-    if (materialRoughness[m.id]) {
-      const pattern = rCtx.createPattern(materialRoughness[m.id], 'repeat');
-      rCtx.fillStyle = pattern;
+    if (matRoughness[m.id]) {
+      rCtx.fillStyle = rCtx.createPattern(matRoughness[m.id], 'repeat');
+      rCtx.fillRect(0, 0, size, size);
+    } else {
+      const v = Math.round(m.roughness * 255);
+      rCtx.fillStyle = `rgb(${v},${v},${v})`;
       rCtx.fillRect(0, 0, size, size);
     }
     rCtx.restore();
   });
   state.outputRoughness = roughness;
 
-  // METALLIC — per material flat value
+  // METALLIC
   const metallic = document.createElement('canvas');
   metallic.width = size; metallic.height = size;
   const mCtx = metallic.getContext('2d');
@@ -1258,10 +1476,7 @@ function generateMaps() {
     if (!m) return;
     const v = Math.round(m.metallic * 255);
     mCtx.save();
-    mCtx.beginPath();
-    mCtx.moveTo(s.points[0][0] * sx, s.points[0][1] * sy);
-    for (let i = 1; i < s.points.length; i++) mCtx.lineTo(s.points[i][0] * sx, s.points[i][1] * sy);
-    mCtx.closePath();
+    clipPath(mCtx, s.points, sx, sy);
     mCtx.clip();
     mCtx.fillStyle = `rgb(${v},${v},${v})`;
     mCtx.fillRect(0, 0, size, size);
@@ -1269,16 +1484,15 @@ function generateMaps() {
   });
   state.outputMetallic = metallic;
 
-  // Display in grid
+  // Display
   const grid = document.getElementById('mapsGrid');
   grid.innerHTML = '';
-  const maps = [
-    { label: 'ALBEDO', accent: false, canvas: albedo, filename: 'albedo.png' },
-    { label: 'NORMAL', accent: false, canvas: normal, filename: 'normal.png' },
-    { label: 'ROUGHNESS', accent: false, canvas: roughness, filename: 'roughness.png' },
-    { label: 'METALLIC', accent: false, canvas: metallic, filename: 'metallic.png' },
-  ];
-  maps.forEach(m => {
+  [
+    { label: 'ALBEDO',    canvas: albedo,   filename: 'albedo.png' },
+    { label: 'NORMAL',    canvas: normal,   filename: 'normal.png' },
+    { label: 'ROUGHNESS', canvas: roughness, filename: 'roughness.png' },
+    { label: 'METALLIC',  canvas: metallic, filename: 'metallic.png' },
+  ].forEach(m => {
     const card = document.createElement('div');
     card.className = 'map-card';
     card.innerHTML = `
@@ -1294,7 +1508,13 @@ function generateMaps() {
   });
 }
 
-// Sobel-based normal from grayscale of albedo
+function clipPath(ctx, points, sx, sy) {
+  ctx.beginPath();
+  ctx.moveTo(points[0][0] * sx, points[0][1] * sy);
+  for (let i = 1; i < points.length; i++) ctx.lineTo(points[i][0] * sx, points[i][1] * sy);
+  ctx.closePath();
+}
+
 function generateNormalFromImage(img, strength, invertY) {
   const w = img.width, h = img.height;
   const src = document.createElement('canvas');
@@ -1302,34 +1522,26 @@ function generateNormalFromImage(img, strength, invertY) {
   const sctx = src.getContext('2d');
   sctx.drawImage(img, 0, 0);
   const data = sctx.getImageData(0, 0, w, h).data;
-
-  // Grayscale buffer
   const gray = new Float32Array(w * h);
   for (let i = 0; i < w * h; i++) {
     gray[i] = (data[i*4] * 0.299 + data[i*4+1] * 0.587 + data[i*4+2] * 0.114) / 255;
   }
-
   const out = document.createElement('canvas');
   out.width = w; out.height = h;
   const octx = out.getContext('2d');
   const outData = octx.createImageData(w, h);
-
   function gAt(x, y) {
-    x = Math.max(0, Math.min(w - 1, x));
-    y = Math.max(0, Math.min(h - 1, y));
-    return gray[y * w + x];
+    return gray[Math.max(0, Math.min(h-1, y)) * w + Math.max(0, Math.min(w-1, x))];
   }
   for (let y = 0; y < h; y++) {
     for (let x = 0; x < w; x++) {
-      // Sobel
-      const tl = gAt(x-1,y-1), t = gAt(x,y-1), tr = gAt(x+1,y-1);
-      const l = gAt(x-1,y),                       r = gAt(x+1,y);
-      const bl = gAt(x-1,y+1), b = gAt(x,y+1), br = gAt(x+1,y+1);
+      const tl=gAt(x-1,y-1), t=gAt(x,y-1), tr=gAt(x+1,y-1);
+      const l=gAt(x-1,y),                   r=gAt(x+1,y);
+      const bl=gAt(x-1,y+1), b=gAt(x,y+1), br=gAt(x+1,y+1);
       const dX = (tr + 2*r + br) - (tl + 2*l + bl);
       const dY = (bl + 2*b + br) - (tl + 2*t + tr);
       let nx = -dX * strength;
-      let ny = -dY * strength;
-      if (invertY) ny = -ny;
+      let ny = invertY ? dY * strength : -dY * strength;
       let nz = 1;
       const len = Math.sqrt(nx*nx + ny*ny + nz*nz);
       nx /= len; ny /= len; nz /= len;
@@ -1344,30 +1556,24 @@ function generateNormalFromImage(img, strength, invertY) {
   return out;
 }
 
-// Roughness derived from luminance of albedo
 function generateRoughnessFromImage(img, base, contrast, invert) {
   const w = img.width, h = img.height;
   const src = document.createElement('canvas');
   src.width = w; src.height = h;
-  const sctx = src.getContext('2d');
-  sctx.drawImage(img, 0, 0);
-  const data = sctx.getImageData(0, 0, w, h).data;
+  src.getContext('2d').drawImage(img, 0, 0);
+  const data = src.getContext('2d').getImageData(0, 0, w, h).data;
   const out = document.createElement('canvas');
   out.width = w; out.height = h;
   const octx = out.getContext('2d');
   const outData = octx.createImageData(w, h);
   for (let i = 0; i < w * h; i++) {
-    const lum = data[i*4] * 0.299 + data[i*4+1] * 0.587 + data[i*4+2] * 0.114;
-    let v = lum / 255;
+    let v = (data[i*4] * 0.299 + data[i*4+1] * 0.587 + data[i*4+2] * 0.114) / 255;
     if (invert) v = 1 - v;
-    // Apply contrast around 0.5, then blend to base
     v = (v - 0.5) * contrast + 0.5;
-    v = base + (v - 0.5) * 0.5; // gentle base shift
+    v = base + (v - 0.5) * 0.5;
     v = Math.max(0, Math.min(1, v));
     const b = Math.round(v * 255);
-    outData.data[i*4]   = b;
-    outData.data[i*4+1] = b;
-    outData.data[i*4+2] = b;
+    outData.data[i*4] = outData.data[i*4+1] = outData.data[i*4+2] = b;
     outData.data[i*4+3] = 255;
   }
   octx.putImageData(outData, 0, 0);
@@ -1378,22 +1584,18 @@ function downloadCanvas(canvas, filename) {
   canvas.toBlob(blob => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    a.click();
+    a.href = url; a.download = filename; a.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   }, 'image/png');
 }
 
 document.getElementById('downloadAll').addEventListener('click', () => {
-  // Sequential downloads — browsers will throttle but each will fire
-  const maps = [
-    { c: state.outputAlbedo, n: 'albedo.png' },
-    { c: state.outputNormal, n: 'normal.png' },
+  [
+    { c: state.outputAlbedo,    n: 'albedo.png' },
+    { c: state.outputNormal,    n: 'normal.png' },
     { c: state.outputRoughness, n: 'roughness.png' },
-    { c: state.outputMetallic, n: 'metallic.png' },
-  ];
-  maps.forEach((m, i) => setTimeout(() => downloadCanvas(m.c, m.n), i * 250));
+    { c: state.outputMetallic,  n: 'metallic.png' },
+  ].forEach((m, i) => setTimeout(() => downloadCanvas(m.c, m.n), i * 250));
   toast('Downloading 4 maps…');
 });
 
